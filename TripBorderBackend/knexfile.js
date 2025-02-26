@@ -1,7 +1,13 @@
 require('dotenv').config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 const fs = require('fs');
 
-const DB_PASSWORD = fs.readFileSync('/run/secrets/db_password', 'utf8').trim();
+let DB_PASSWORD;
+
+try {
+  DB_PASSWORD = fs.readFileSync('/run/secrets/db_password', 'utf8').trim();
+} catch (error) {
+  DB_PASSWORD = process.env.DB_PASSWORD;
+}
 
 /**
  * @type { Object.<string, import("knex").Knex.Config> }

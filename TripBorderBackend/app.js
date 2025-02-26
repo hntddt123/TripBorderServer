@@ -7,6 +7,7 @@ import fs from 'fs';
 import cors from 'cors';
 
 import loginRouter from './api/routes/login';
+import devRouter from './api/routes/dev';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
@@ -26,10 +27,12 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
+const allowedOrigins = process.env.FRONTEND_ORIGIN.split(',');
+
 app.use(morgan('dev'));
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_ORIGIN,
+  origin: allowedOrigins,
   credentials: true
 }));
 
@@ -41,6 +44,7 @@ const options = {
 const httpsServer = https.createServer(options, app);
 
 app.use(loginRouter);
+app.use(devRouter);
 
 app.get('/test', (req, res) => {
   console.log('Test route hit');

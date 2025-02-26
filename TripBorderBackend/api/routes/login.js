@@ -6,13 +6,9 @@ import GoogleStrategy from 'passport-google-oauth20';
 import pg from 'pg';
 import connectPgSimple from 'connect-pg-simple';
 import fs from 'fs';
-import knex from 'knex';
-import knexfile from '../../knexfile';
+import { upsertUserOnGoogleLogin } from '../knex/loginknex';
 
 const SessionStore = connectPgSimple(session);
-const knexInstance = (process.env.NODE_ENV === 'development')
-  ? knex(knexfile.development)
-  : knex(knexfile.production);
 
 const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env;
 const { DB_HOST, DB_USER, DB_NAME } = process.env;
@@ -59,20 +55,7 @@ passport.use(new GoogleStrategy(
   async (accessToken, refreshToken, profile, callback) => {
     // fetch or create user here based on profile data
     try {
-      let user = await knexInstance('user_accounts').where({ provider_user_id: profile.id }).first();
-
-      if (!user) {
-        user = await knexInstance('user_accounts').insert({
-          provider: profile.provider,
-          provider_user_id: profile.id,
-          email: profile.emails[0].value,
-          name: profile.displayName,
-          profile_picture: profile.photos[0].value,
-          // If storing tokens (securely)
-          // access_token: accessToken,
-          // refresh_token: refreshToken,
-        }).returning('*').then((rows) => rows[0]);
-      }
+      const user = await upsertUserOnGoogleLogin(profile);
       callback(null, user);
     } catch (err) {
       callback(err);
@@ -98,14 +81,13 @@ loginRouter.get(
   '/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    res.redirect(`${FRONTEND_ORIGIN}/?auth=success`);
+    res.redirect(`${FRONTEND_ORIGIN.split(',')[0]}/?auth=success`);
   }
 );
 
 loginRouter.get('/', (req, res) => {
   if (req.user && req.session.views) {
     req.session.views += 1;
-
     res.json({
       isLoggedIn: true,
       viewCount: req.session.views,
