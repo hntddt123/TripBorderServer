@@ -25,9 +25,6 @@ COPY . .
 COPY ./ssl /ssl
 RUN chmod -R 600 /ssl/*
 
-# Expose the port that the application listens on.
-EXPOSE 7777
-
 # Run the application.
 CMD ["npm", "run", "server"]
 

@@ -9,7 +9,7 @@
 # https://github.com/docker/awesome-compose
 networks:
   backend-network:
-    name: tripborder-backend-network
+    name: tripborder-backend-networkprod
     external: true
 
 secrets:
@@ -19,7 +19,7 @@ secrets:
     file: ./secrets/tunnel_token.txt
 
 services:
-  server:
+  serverprod:
     build: .
     expose:
     - "7777"
@@ -27,11 +27,11 @@ services:
       - ./ssl:/ssl
     environment:
       NODE_ENV: production
-      DB_HOST: db
+      DB_HOST: dbprod
       DB_USER: nientaiho
       DB_NAME: tripborderdb
-      SSL_CERTIFICATE_PATH: /ssl/tripborderservercert.pem
-      SSL_PRIVATE_KEY_PATH: /ssl/tripborderserverkey.pem
+      SSL_CERTIFICATE_PATH: /ssl/tripborderbackend-cert.pem
+      SSL_PRIVATE_KEY_PATH: /ssl/tripborderbackend-key.pem
     env_file:
       - .env.production
     command: sh -c "npx knex migrate:latest && npm run server" # migrate to latest database schema
@@ -40,10 +40,10 @@ services:
     networks:
       - backend-network
     depends_on:
-      db:
+      dbprod:
         condition: service_healthy
 
-  db:
+  dbprod:
     image: postgres:latest
     environment:
       POSTGRES_USER: nientaiho
@@ -61,13 +61,13 @@ services:
       timeout: 5s
       retries: 5
 
-  nginx:
+  nginxprod:
     image: nginx:alpine
     ports: 
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/${NGINX_CONF:-dev.conf}:/etc/nginx/conf.d/default.conf
+      - ./nginx/prod.conf:/etc/nginx/conf.d/default.conf
       - ./ssl:/etc/nginx/ssl:ro
     networks:
       - backend-network
@@ -77,7 +77,7 @@ services:
         max-size: "10m"
         max-file: "3"
     depends_on:
-      - server
+      - serverprod
 
 volumes:
   postgres_data_prod: # Define the named volume here
