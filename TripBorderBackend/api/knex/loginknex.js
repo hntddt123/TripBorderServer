@@ -1,17 +1,12 @@
-import knex from 'knex';
-import knexfile from '../../knexfile';
-
-const knexInstance = (process.env.NODE_ENV === 'development')
-  ? knex(knexfile.development)
-  : knex(knexfile.production);
+import { knexDBInstance } from './knexDBInstance';
 
 export async function upsertUserOnGoogleLogin(profile) {
-  let user = await knexInstance('user_accounts')
+  let user = await knexDBInstance('user_accounts')
     .where({ provider_user_id: profile.id })
     .first();
 
   if (!user) {
-    user = await knexInstance('user_accounts').insert({
+    user = await knexDBInstance('user_accounts').insert({
       provider: profile.provider,
       provider_user_id: profile.id,
       email: profile.emails[0].value,
@@ -23,10 +18,10 @@ export async function upsertUserOnGoogleLogin(profile) {
     }).returning('*')
       .then((rows) => rows[0]);
   } else {
-    await knexInstance('user_accounts')
+    await knexDBInstance('user_accounts')
       .where({ provider_user_id: profile.id })
       .update({
-        updated_at: knexInstance.fn.now()
+        updated_at: knexDBInstance.fn.now()
       });
   }
   return user;

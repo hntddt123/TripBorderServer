@@ -7,7 +7,7 @@ import fs from 'fs';
 import cors from 'cors';
 
 import loginRouter from './api/routes/login';
-import devRouter from './api/routes/dev';
+import apiRouter from './api/routes/api';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
@@ -35,6 +35,7 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
+app.use(express.json({ limit: '10mb' }));
 
 const options = {
   key: fs.readFileSync(process.env.SSL_KEY_PATH),
@@ -44,7 +45,7 @@ const options = {
 const httpsServer = https.createServer(options, app);
 
 app.use(loginRouter);
-app.use(devRouter);
+app.use(apiRouter);
 
 app.get('/test', (req, res) => {
   console.log('Test route hit');
