@@ -4,7 +4,7 @@
  */
 exports.up = function createUserAccountsTable(knex) {
   return knex.schema.createTable('user_accounts', (table) => {
-    table.increments('id').primary();
+    table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.string('email').unique().notNullable();
     table.string('provider').notNullable(); // e.g., 'google', 'facebook'
     table.string('provider_user_id').notNullable(); // User ID from the SSO provider
