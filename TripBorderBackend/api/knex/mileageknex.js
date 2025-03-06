@@ -12,7 +12,8 @@ export async function insertMileages(selectedMileage) {
     mileage_expired_at: selectedMileage.mileage_expired_at,
     created_at: knexDBInstance.fn.now(),
     updated_at: knexDBInstance.fn.now(),
-    verified: false
+    verified: false,
+    owner_email: selectedMileage.owner_email
   }).returning('*')
     .then((rows) => rows[0]);
 }

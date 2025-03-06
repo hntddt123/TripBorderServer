@@ -91,14 +91,18 @@ loginRouter.get('/', (req, res) => {
     res.json({
       isLoggedIn: true,
       viewCount: req.session.views,
-      user: req.user.name,
+      uuid: req.user.uuid,
+      email: req.user.email,
+      provider: req.user.provider,
+      provider_user_id: req.user.provider_user_id,
+      name: req.user.name,
       profilePicture: req.user.profile_picture,
-      message: `Welcome ${req.user.name}`
+      createdAt: req.user.created_at,
+      updatedAt: req.user.updated_at
     });
   } else {
     req.session.views = 1;
     res.json({
-      message: 'please login',
       isLoggedIn: false
     });
   }

@@ -30,8 +30,23 @@ apiRouter.get('/api/mileages', async (req, res) => {
         'mileage_expired_at',
         'created_at',
         'updated_at',
-        'verified'
+        'verified',
+        'owner_email'
       );
+    res.json(mileages);
+  } catch (error) {
+    console.error('Error Fetching mileages', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+apiRouter.post('/api/mileagesbyemail', async (req, res) => {
+  const ownerEmail = req.body.data;
+
+  try {
+    const mileages = await knexDBInstance('mileages')
+      .where({ owner_email: ownerEmail });
+
     res.json(mileages);
   } catch (error) {
     console.error('Error Fetching mileages', error);
@@ -44,10 +59,10 @@ apiRouter.post('/api/uploadmileages', async (req, res) => {
 
   try {
     await insertMileages(newMileage);
-    res.send('Mileage Created!');
+    res.json({ message: 'Mileage Created!' });
   } catch (error) {
     console.error('Error in creating Mileage:', error);
-    res.status(500).send('Failed to create Mileage');
+    res.status(500).send({ error: 'Failed to create Mileage' });
   }
 });
 
