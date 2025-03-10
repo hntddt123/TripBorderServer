@@ -10,6 +10,7 @@ exports.up = function createUserAccountsTable(knex) {
     table.string('provider_user_id').notNullable(); // User ID from the SSO provider
     table.string('name').notNullable();
     table.string('profile_picture');
+    table.enum('role', ['user', 'premium_user', 'admin']).defaultTo('user').notNullable();
     table.timestamp('created_at').defaultTo(knex.fn.now());
     table.timestamp('updated_at').defaultTo(knex.fn.now());
   });

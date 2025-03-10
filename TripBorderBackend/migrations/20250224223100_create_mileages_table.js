@@ -12,7 +12,8 @@ exports.up = function createMileagesTable(knex) {
     table.enum('mileage_unit', ['miles', 'km']).notNullable();
     table.specificType('mileage_picture', 'BYTEA').notNullable();
     table.timestamp('mileage_expired_at').notNullable().defaultTo('9999-12-2');
-    table.boolean('verified').notNullable().defaultTo(false);
+    table.boolean('is_verified').notNullable().defaultTo(false);
+    table.boolean('is_listed').notNullable().defaultTo(true);
     table.timestamp('created_at').defaultTo(knex.fn.now());
     table.timestamp('updated_at').defaultTo(knex.fn.now());
     table.string('owner_email').notNullable();

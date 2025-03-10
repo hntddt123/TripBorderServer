@@ -12,8 +12,24 @@ export async function insertMileages(selectedMileage) {
     mileage_expired_at: selectedMileage.mileage_expired_at,
     created_at: knexDBInstance.fn.now(),
     updated_at: knexDBInstance.fn.now(),
-    verified: false,
+    is_verified: false,
+    is_listed: false,
     owner_email: selectedMileage.owner_email
   }).returning('*')
     .then((rows) => rows[0]);
+}
+
+export async function deleteMileages(mileageID) {
+  const count = await knexDBInstance('mileages')
+    .where('uuid', mileageID)
+    .delete();
+  console.log(`Deleted ${count} row(s)`);
+}
+
+export async function updateMileages(uuid, updateData) {
+  const updatedRows = await knexDBInstance('mileages')
+    .where('uuid', uuid)
+    .update(updateData);
+
+  return updatedRows;
 }

@@ -98,7 +98,8 @@ loginRouter.get('/', (req, res) => {
       name: req.user.name,
       profilePicture: req.user.profile_picture,
       createdAt: req.user.created_at,
-      updatedAt: req.user.updated_at
+      updatedAt: req.user.updated_at,
+      role: req.user.role
     });
   } else {
     req.session.views = 1;

@@ -36,7 +36,8 @@ exports.seed = function seed(knex) {
         mileage_expired_at: '2030-12-31',
         created_at: knex.fn.now(),
         updated_at: knex.fn.now(),
-        owner_email: 'test@tripborder.com'
+        owner_email: 'test@tripborder.com',
+        is_verified: true
       },
     ]));
 };
