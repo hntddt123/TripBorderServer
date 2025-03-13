@@ -13,7 +13,7 @@ export async function insertMileages(selectedMileage) {
     created_at: knexDBInstance.fn.now(),
     updated_at: knexDBInstance.fn.now(),
     is_verified: false,
-    is_listed: false,
+    is_listed: true,
     owner_email: selectedMileage.owner_email
   }).returning('*')
     .then((rows) => rows[0]);

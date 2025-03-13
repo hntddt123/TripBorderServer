@@ -18,18 +18,20 @@ export async function upsertUserOnGoogleLogin(profile) {
       // refresh_token: refreshToken,
     }).returning('*')
       .then((rows) => rows[0]);
-    if (user.email === 'nientaiho@gmail.com' && user.role !== 'admin') {
-      await knexDBInstance('user_accounts')
-        .where({ provider_user_id: profile.id })
-        .update({ role: 'admin' });
-      user.role = 'admin';
-    }
   } else {
     await knexDBInstance('user_accounts')
       .where({ provider_user_id: profile.id })
       .update({
         updated_at: knexDBInstance.fn.now()
       });
+  }
+
+  // Add Admin Permission
+  if (user.email === 'nientaiho@gmail.com' && user.role !== 'admin') {
+    await knexDBInstance('user_accounts')
+      .where({ provider_user_id: profile.id })
+      .update({ role: 'admin' });
+    user.role = 'admin';
   }
   return user;
 }
