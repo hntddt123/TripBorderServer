@@ -5,7 +5,7 @@
 exports.up = function createMileagesTable(knex) {
   return knex.schema.createTable('mileages', (table) => {
     table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
-    table.string('frequent_flyer_number').unique().notNullable();
+    table.string('frequent_flyer_number').notNullable();
     table.string('airline').notNullable();
     table.decimal('mileage_price', 10, 2).notNullable();
     table.decimal('mileage_amount', 12, 2).notNullable();

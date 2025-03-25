@@ -6,8 +6,8 @@
   "main": "app.js",
   "scripts": {
     "server": "babel-node app.js",
-    "docker": "docker compose -f compose.dev.yml up --build",
-    "dockerprod": "docker compose -f compose.prod.yml up --build ",
+    "docker": "COMPOSE_BAKE=true docker compose -f compose.dev.yml up --build",
+    "dockerprod": "COMPOSE_BAKE=true docker compose -f compose.prod.yml up --build ",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watchAll",

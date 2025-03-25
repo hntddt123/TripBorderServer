@@ -27,24 +27,32 @@ apiRouter.get('/api/users', async (req, res) => {
 
 apiRouter.get('/api/mileages', async (req, res) => {
   try {
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 10;
+    const offset = (page - 1) * limit;
+
+    const totalResult = await knexDBInstance('mileages')
+      .count('* as total')
+      .first();
+    const total = parseInt(totalResult.total, 10);
+
     const mileages = await knexDBInstance('mileages')
-      .select(
-        'uuid',
-        'frequent_flyer_number',
-        'airline',
-        'mileage_price',
-        'mileage_amount',
-        'mileage_unit',
-        'mileage_picture',
-        'mileage_expired_at',
-        'created_at',
-        'updated_at',
-        'is_verified',
-        'is_listed',
-        'owner_email'
-      )
+      .limit(limit)
+      .offset(offset)
       .orderBy('created_at', 'desc');
-    res.json(mileages);
+
+    const totalPages = Math.ceil(total / limit);
+
+    if (page > totalPages && total > 0) {
+      res.status(400).json({ error: 'Invalid page number' });
+    }
+
+    res.json({
+      mileages,
+      total,
+      totalPages,
+      page
+    });
   } catch (error) {
     console.error('Error Fetching mileages', error);
     res.status(500).json({ error: 'Internal server error' });
