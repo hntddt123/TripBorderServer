@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { Router } from 'express';
 import session from 'express-session';
 import passport from 'passport';
@@ -6,6 +5,7 @@ import GoogleStrategy from 'passport-google-oauth20';
 import pg from 'pg';
 import connectPgSimple from 'connect-pg-simple';
 import fs from 'fs';
+import ms from 'ms';
 import { upsertUserOnGoogleLogin } from '../knex/loginknex';
 
 const SessionStore = connectPgSimple(session);
@@ -38,7 +38,8 @@ loginRouter.use(session({
   cookie: {
     secure: true,
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 // 24hr
+    maxAge: ms('1 year'),
+    sameSite: 'strict'
   }
 }));
 

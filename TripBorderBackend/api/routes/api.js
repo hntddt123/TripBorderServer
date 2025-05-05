@@ -47,7 +47,6 @@ apiRouter.patch('/api/updateuser/:uuid', async (req, res) => {
   }
 });
 
-
 apiRouter.get('/api/mileages', async (req, res) => {
   try {
     const page = req.query.page || 1;

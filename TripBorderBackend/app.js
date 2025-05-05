@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import morgan from 'morgan'; // logger
 import helmet from 'helmet';
@@ -46,10 +47,15 @@ const httpsServer = https.createServer(options, app);
 
 app.use(loginRouter);
 app.use(apiRouter);
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit to 100 requests per window
+  message: 'Too many requests from this IP, please try again later.'
+}));
 
-app.get('/test', (req, res) => {
-  console.log('Test route hit');
-  res.send('TEST Hello World!');
+app.get('/easteregg', (req, res) => {
+  console.log('Found an egg');
+  res.send('Found an egg on your trip!');
 });
 
 httpsServer.listen(serverPort, () => {
