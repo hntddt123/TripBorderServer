@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { knexDBInstance } from '../knex/knexDBInstance';
 import { insertMileages, deleteMileages, updateMileages } from '../knex/mileageknex';
 import { updateUser } from '../knex/userknex';
+import logger from '../../setupPino';
 
 const apiRouter = Router();
 
@@ -21,7 +22,7 @@ apiRouter.get('/api/users', async (req, res) => {
       );
     res.json(users);
   } catch (error) {
-    console.error('Error Fetching User', error);
+    logger.error(`Error Fetching User ${error}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -42,7 +43,7 @@ apiRouter.patch('/api/updateuser/:uuid', async (req, res) => {
 
     res.json({ message: 'User Updated!' });
   } catch (error) {
-    console.error('Error in updating User:', error);
+    logger.error(`Error in updating User: ${error}`);
     res.status(500).send({ error: 'Failed to update User' });
   }
 });
@@ -76,7 +77,7 @@ apiRouter.get('/api/mileages', async (req, res) => {
       page
     });
   } catch (error) {
-    console.error('Error Fetching mileages', error);
+    logger.error(`Error Fetching mileages ${error}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -91,7 +92,7 @@ apiRouter.post('/api/mileagesbyemail', async (req, res) => {
 
     res.json(mileages);
   } catch (error) {
-    console.error('Error Fetching mileages', error);
+    logger.error(`Error Fetching mileages ${error}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -103,7 +104,7 @@ apiRouter.post('/api/uploadmileages', async (req, res) => {
     await insertMileages(newMileage);
     res.json({ message: 'Mileage Created!' });
   } catch (error) {
-    console.error('Error in creating Mileage:', error);
+    logger.error(`Error in creating Mileage: ${error}`);
     res.status(500).send({ error: 'Failed to create Mileage' });
   }
 });
@@ -115,7 +116,7 @@ apiRouter.delete('/api/removemileagebyid', async (req, res) => {
     await deleteMileages(mileageID);
     res.json({ message: 'Mileage Removed!' });
   } catch (error) {
-    console.error('Error in removing Mileage:', error);
+    logger.error(`Error in removing Mileage: ${error}`);
     res.status(500).send({ error: 'Failed to remove Mileage' });
   }
 });
@@ -137,7 +138,7 @@ apiRouter.patch('/api/updatemileages/:uuid', async (req, res) => {
 
     res.json({ message: 'Mileage Updated!' });
   } catch (error) {
-    console.error('Error in updating Mileage:', error);
+    logger.error(`Error in updating Mileage: ${error}`);
     res.status(500).send({ error: 'Failed to update Mileage' });
   }
 });

@@ -1,4 +1,5 @@
 import { knexDBInstance } from './knexDBInstance';
+import logger from '../../setupPino';
 
 export async function insertMileages(selectedMileage) {
   await knexDBInstance('mileages').insert({
@@ -23,7 +24,7 @@ export async function deleteMileages(mileageID) {
   const count = await knexDBInstance('mileages')
     .where('uuid', mileageID)
     .delete();
-  console.log(`Deleted ${count} row(s)`);
+  logger.info(`Deleted ${count} row(s)`);
 }
 
 export async function updateMileages(uuid, updateData) {

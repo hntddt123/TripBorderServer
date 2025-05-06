@@ -9,6 +9,7 @@ import cors from 'cors';
 
 import loginRouter from './api/routes/login';
 import apiRouter from './api/routes/api';
+import logger from './setupPino';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
@@ -16,7 +17,8 @@ const app = express();
 const serverPort = process.env.PORT;
 
 if (process.env.NODE_ENV === 'development') {
-  console.log('Environment Variables:', {
+  logger.info('Environment Variable');
+  logger.info({
     NODE_ENV: process.env.NODE_ENV,
     NGINX_CONF: process.env.NGINX_CONF,
     FRONTEND_ORIGIN: process.env.FRONTEND_ORIGIN,
@@ -54,10 +56,10 @@ app.use(rateLimit({
 }));
 
 app.get('/easteregg', (req, res) => {
-  console.log('Found an egg');
+  logger.info('Found an egg');
   res.send('Found an egg on your trip!');
 });
 
 httpsServer.listen(serverPort, () => {
-  console.log(`Trip Border ${process.env.VERSION} ${process.env.NODE_ENV} server listening at ${process.env.BACKEND_ORIGIN}:${serverPort}`);
+  logger.info(`Trip Border ${process.env.VERSION} ${process.env.NODE_ENV} server listening at ${process.env.BACKEND_ORIGIN}:${serverPort}`);
 });

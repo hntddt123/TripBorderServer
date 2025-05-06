@@ -9,6 +9,7 @@ import ms from 'ms';
 import crypto from 'crypto';
 import { cleanEnv, str, url } from 'envalid';
 import { upsertUserOnGoogleLogin } from '../knex/loginknex';
+import logger from '../../setupPino';
 
 const env = cleanEnv(process.env, {
   GOOGLE_CLIENT_ID: str(),
@@ -32,7 +33,7 @@ let DB_PASSWORD = '';
 try {
   DB_PASSWORD = fs.readFileSync('/run/secrets/db_password', 'utf8').trim();
 } catch (error) {
-  console.error('Failed to read DB password:', error);
+  logger.error(`Failed to read DB password: ${error}`);
   process.exit(1);
 }
 
@@ -140,7 +141,7 @@ loginRouter.get('/', (req, res) => {
 loginRouter.get('/logout', (req, res) => {
   req.logout((err) => {
     if (err) {
-      console.log(err);
+      logger(err);
       res.status(500).send('An error occurred while logging out');
     } else {
       res.clearCookie('connect.sid');
