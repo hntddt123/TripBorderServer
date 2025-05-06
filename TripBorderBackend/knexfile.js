@@ -1,6 +1,7 @@
-require('dotenv').config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
-const fs = require('fs');
+import dotenv from 'dotenv';
+import fs from 'fs';
 
+dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 let DB_PASSWORD;
 
 try {
@@ -12,7 +13,7 @@ try {
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-module.exports = {
+export default {
   development: {
     client: 'postgresql',
     connection: {

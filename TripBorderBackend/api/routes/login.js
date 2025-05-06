@@ -6,16 +6,35 @@ import pg from 'pg';
 import connectPgSimple from 'connect-pg-simple';
 import fs from 'fs';
 import ms from 'ms';
+import crypto from 'crypto';
+import { cleanEnv, str, url } from 'envalid';
 import { upsertUserOnGoogleLogin } from '../knex/loginknex';
+
+const env = cleanEnv(process.env, {
+  GOOGLE_CLIENT_ID: str(),
+  GOOGLE_CLIENT_SECRET: str(),
+  SESSION_SECRET: str({ default: crypto.randomBytes(32).toString('hex') }),
+  DB_HOST: str(),
+  DB_USER: str(),
+  DB_NAME: str(),
+  FRONTEND_ORIGIN: url(),
+});
 
 const SessionStore = connectPgSimple(session);
 
-const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env;
-const { DB_HOST, DB_USER, DB_NAME } = process.env;
-const { SESSION_SECRET } = process.env;
-const { FRONTEND_ORIGIN } = process.env;
+const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = env;
+const { DB_HOST, DB_USER, DB_NAME } = env;
+const { SESSION_SECRET } = env;
+const { FRONTEND_ORIGIN } = env;
 
-const DB_PASSWORD = fs.readFileSync('/run/secrets/db_password', 'utf8').trim();
+let DB_PASSWORD = '';
+
+try {
+  DB_PASSWORD = fs.readFileSync('/run/secrets/db_password', 'utf8').trim();
+} catch (error) {
+  console.error('Failed to read DB password:', error);
+  process.exit(1);
+}
 
 const loginRouter = Router();
 
@@ -25,6 +44,9 @@ const pgPool = new pg.Pool({
   password: DB_PASSWORD,
   database: DB_NAME,
   port: 5432,
+  max: 20, // Max connections
+  idleTimeoutMillis: 30000, // Close idle connections after 30s
+  connectionTimeoutMillis: 2000 // Timeout for new connections
 });
 
 loginRouter.use(session({
@@ -47,6 +69,13 @@ loginRouter.use(session({
 loginRouter.use(passport.initialize());
 loginRouter.use(passport.session());
 
+/**
+ * Configures Google OAuth strategy for Passport.js.
+ * @param {string} accessToken - OAuth access token
+ * @param {string} refreshToken - OAuth refresh token
+ * @param {object} profile - Google user profile
+ * @param {function} callback - Passport callback
+ */
 passport.use(new GoogleStrategy(
   {
     clientID: GOOGLE_CLIENT_ID,
@@ -87,11 +116,9 @@ loginRouter.get(
 );
 
 loginRouter.get('/', (req, res) => {
-  if (req.user && req.session.views) {
-    req.session.views += 1;
+  if (req.user) {
     res.json({
       isLoggedIn: true,
-      viewCount: req.session.views,
       uuid: req.user.uuid,
       email: req.user.email,
       provider: req.user.provider,
@@ -103,7 +130,6 @@ loginRouter.get('/', (req, res) => {
       role: req.user.role
     });
   } else {
-    req.session.views = 1;
     res.json({
       isLoggedIn: false
     });
