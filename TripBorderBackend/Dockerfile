@@ -6,7 +6,7 @@
 
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
-ARG NODE_VERSION=23.9.0
+ARG NODE_VERSION=23.11.0
 
 FROM node:${NODE_VERSION}-alpine
 
@@ -16,7 +16,7 @@ WORKDIR /src
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm i
 
 # Copy the rest of the application code
 COPY . .
