@@ -141,7 +141,7 @@ loginRouter.get('/', (req, res) => {
 loginRouter.get('/logout', (req, res) => {
   req.logout((err) => {
     if (err) {
-      logger(err);
+      logger.error(err);
       res.status(500).send('An error occurred while logging out');
     } else {
       res.clearCookie('connect.sid');
