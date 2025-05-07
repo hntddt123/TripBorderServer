@@ -1,15 +1,13 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
-import morgan from 'morgan'; // logger
 import helmet from 'helmet';
 import https from 'https';
 import fs from 'fs';
 import cors from 'cors';
-
 import loginRouter from './api/routes/login';
 import apiRouter from './api/routes/api';
-import logger from './setupPino';
+import logger, { httpLogger } from './setupPino';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
@@ -32,7 +30,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const allowedOrigins = process.env.FRONTEND_ORIGIN.split(',');
 
-app.use(morgan('dev'));
+app.use(httpLogger);
 app.use(helmet());
 app.use(cors({
   origin: allowedOrigins,

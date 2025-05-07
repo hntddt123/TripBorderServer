@@ -1,4 +1,5 @@
 import pino from 'pino';
+import PinoHttp from 'pino-http';
 
 // Configure log rotation for production (e.g., new file daily or when size exceeds 10MB)
 const transport = pino.transport({
@@ -31,5 +32,23 @@ const logger = pino(
   // Use log rotation in production
   process.env.NODE_ENV === 'production' ? transport : undefined
 );
+
+export const httpLogger = PinoHttp({
+  logger,
+  // Customize the request completion message
+  customSuccessMessage: (req, res) => `${req.method} ${req.url} completed with status ${res.statusCode}`,
+  // Optionally customize the error message
+  customErrorMessage: (req, res, err) => `${req.method} ${req.url} failed with status ${res.statusCode}: ${err.message}`,
+  // Custom request/response serializers
+  serializers: {
+    req: (req) => ({
+      remoteAddress: req.remoteAddress,
+      headers: { host: req.headers.host, 'user-agent': req.headers['user-agent'] },
+    }),
+    res: (res) => ({
+      contentLength: res.headers['content-length'] || '-',
+    }),
+  }
+});
 
 export default logger;
