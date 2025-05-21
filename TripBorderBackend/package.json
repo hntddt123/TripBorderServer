@@ -23,14 +23,14 @@
     "@babel/eslint-parser": "^7.24.6",
     "@babel/node": "^7.17.10",
     "@babel/preset-env": "^7.17.10",
-    "body-parser": "^1.20.0",
+    "body-parser": "^2.2.0",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "envalid": "^8.0.0",
     "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
-    "express": "^4.18.0",
+    "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
     "express-session": "^1.18.1",
     "fs": "^0.0.1-security",
@@ -47,6 +47,8 @@
     "pino-http": "^10.4.0",
     "pino-pretty": "^13.0.0",
     "pino-roll": "^3.1.0",
-    "supertest": "^7.0.0"
+    "sharp": "^0.34.2",
+    "supertest": "^7.0.0",
+    "tesseract.js": "^6.0.1"
   }
 }
