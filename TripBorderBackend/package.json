@@ -34,6 +34,7 @@
     "express-rate-limit": "^7.5.0",
     "express-session": "^1.18.1",
     "fs": "^0.0.1-security",
+    "heic-convert": "^2.1.0",
     "helmet": "^8.0.0",
     "https": "^1.0.0",
     "jest": "^29.7.0",
@@ -47,7 +48,6 @@
     "pino-http": "^10.4.0",
     "pino-pretty": "^13.0.0",
     "pino-roll": "^3.1.0",
-    "sharp": "^0.34.2",
     "supertest": "^7.0.0",
     "tesseract.js": "^6.0.1"
   }

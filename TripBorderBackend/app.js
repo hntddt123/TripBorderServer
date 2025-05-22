@@ -53,6 +53,11 @@ app.use(rateLimit({
   message: 'Too many requests from this IP, please try again later.'
 }));
 
+app.use((err, req, res, next) => {
+  console.error('Unexpected error:', err.message, err.stack);
+  res.status(500).json({ message: `Internal server error: ${err.message}` });
+});
+
 app.get('/easteregg', (req, res) => {
   logger.info('Found an egg');
   res.send('Found an egg on your trip!');
