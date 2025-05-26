@@ -1,9 +1,17 @@
 import { knexDBInstance } from './knexDBInstance';
 
-export async function updateUser(uuid, updateData) {
-  const updatedRows = await knexDBInstance('user_accounts')
-    .where('uuid', uuid)
-    .update(updateData);
+export const updateUserDB = async (uuid, updateData) => knexDBInstance('user_accounts')
+  .where('uuid', uuid)
+  .update(updateData);
 
-  return updatedRows;
-}
+export const getAllUsersDB = async () => knexDBInstance('user_accounts')
+  .select(
+    'uuid',
+    'provider',
+    'provider_user_id',
+    'email',
+    'name',
+    'created_at',
+    'updated_at',
+    'role'
+  );

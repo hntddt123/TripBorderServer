@@ -46,7 +46,8 @@ const options = {
 const httpsServer = https.createServer(options, app);
 
 app.use(loginRouter);
-app.use(apiRouter);
+app.use('/api', apiRouter);
+
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit to 100 requests per window
@@ -54,7 +55,7 @@ app.use(rateLimit({
 }));
 
 app.use((err, req, res, next) => {
-  console.error('Unexpected error:', err.message, err.stack);
+  logger.error('Unexpected error:', err.message, err.stack);
   res.status(500).json({ message: `Internal server error: ${err.message}` });
 });
 

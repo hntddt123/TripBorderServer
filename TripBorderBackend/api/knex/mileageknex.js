@@ -2,7 +2,38 @@ import { knexDBInstance } from './knexDBInstance';
 import { ocrMatchFrequentFlyerNumber } from '../../utility/ocr';
 import logger from '../../setupPino';
 
-export async function insertMileages(selectedMileage) {
+export const getMileageTotalCountDB = async () => knexDBInstance('mileages')
+  .count('* as total')
+  .first();
+
+export const getMileagePaginationDB = async (limit, offset) => knexDBInstance('mileages')
+  .limit(limit)
+  .offset(offset)
+  .orderBy('created_at', 'desc');
+
+export const getAllVerifiedAndListedMileagesDB = async () => knexDBInstance('mileages')
+  .where({ is_verified: true, is_listed: true })
+  .count('* as total')
+  .first();
+
+export const getVerifiedAndListedMileagesPaginationDB = async (limit, offset) => knexDBInstance('mileages')
+  .where({ is_verified: true, is_listed: true })
+  .limit(limit)
+  .offset(offset)
+  .orderBy('created_at', 'desc');
+
+export const getMileagesTotalCountByEmailDB = async (ownerEmail) => knexDBInstance('mileages')
+  .where({ owner_email: ownerEmail })
+  .count('* as total')
+  .first();
+
+export const getMileagesByEmailPaginationDB = async (ownerEmail, limit, offset) => knexDBInstance('mileages')
+  .where({ owner_email: ownerEmail })
+  .limit(limit)
+  .offset(offset)
+  .orderBy('created_at', 'desc');
+
+export const insertMileagesDB = async (selectedMileage) => {
   const isOcrVerified = await ocrMatchFrequentFlyerNumber(
     selectedMileage.frequent_flyer_number,
     selectedMileage.mileage_picture
@@ -25,19 +56,19 @@ export async function insertMileages(selectedMileage) {
     owner_email: selectedMileage.owner_email
   }).returning('*')
     .then((rows) => rows[0]);
-}
+};
 
-export async function deleteMileages(mileageID) {
+export const deleteMileagesDB = async (mileageID) => {
   const count = await knexDBInstance('mileages')
     .where('uuid', mileageID)
     .delete();
   logger.info(`Deleted ${count} row(s)`);
-}
+};
 
-export async function updateMileages(uuid, updateData) {
+export const updateMileagesDB = async (uuid, updateData) => {
   const updatedRows = await knexDBInstance('mileages')
     .where('uuid', uuid)
     .update(updateData);
 
   return updatedRows;
-}
+};
