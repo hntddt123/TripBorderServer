@@ -34,7 +34,8 @@ services:
       SSL_PRIVATE_KEY_PATH: /ssl/tripborderbackend-key.pem
     env_file:
       - .env.development
-    command: sh -c "npx knex migrate:latest && npm run server" # migrate to latest database schema
+    # migrate to latest database schema and seed file
+    command: sh -c "npx knex migrate:latest && npx knex seed:run --knexfile knexfile.js && npm run server" 
     secrets:
       - db_password
     networks:
