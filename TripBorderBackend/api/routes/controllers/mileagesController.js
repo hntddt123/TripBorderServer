@@ -1,6 +1,6 @@
 import {
-  getMileageTotalCountDB,
-  getMileagePaginationDB,
+  getMileagesTotalCountDB,
+  getMileagesPaginationDB,
   getAllVerifiedAndListedMileagesDB,
   getVerifiedAndListedMileagesPaginationDB,
   getMileagesTotalCountByEmailDB,
@@ -17,10 +17,10 @@ export const getAllMileagePagination = async (req, res) => {
     const limit = req.query.limit || 10;
     const offset = (page - 1) * limit;
 
-    const totalResult = await getMileageTotalCountDB();
+    const totalResult = await getMileagesTotalCountDB();
     const total = parseInt(totalResult.total, 10);
 
-    const mileages = await getMileagePaginationDB(limit, offset);
+    const mileages = await getMileagesPaginationDB(limit, offset);
 
     const totalPages = Math.ceil(total / limit);
 

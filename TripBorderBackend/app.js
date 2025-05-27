@@ -5,7 +5,6 @@ import helmet from 'helmet';
 import https from 'https';
 import fs from 'fs';
 import cors from 'cors';
-import loginRouter from './api/routes/login';
 import apiRouter from './api/routes/api';
 import logger, { httpLogger } from './setupPino';
 
@@ -45,7 +44,6 @@ const options = {
 
 const httpsServer = https.createServer(options, app);
 
-app.use(loginRouter);
 app.use('/api', apiRouter);
 
 app.use(rateLimit({

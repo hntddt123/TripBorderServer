@@ -2,11 +2,11 @@ import { knexDBInstance } from './knexDBInstance';
 import { ocrMatchFrequentFlyerNumber } from '../../utility/ocr';
 import logger from '../../setupPino';
 
-export const getMileageTotalCountDB = async () => knexDBInstance('mileages')
+export const getMileagesTotalCountDB = async () => knexDBInstance('mileages')
   .count('* as total')
   .first();
 
-export const getMileagePaginationDB = async (limit, offset) => knexDBInstance('mileages')
+export const getMileagesPaginationDB = async (limit, offset) => knexDBInstance('mileages')
   .limit(limit)
   .offset(offset)
   .orderBy('created_at', 'desc');

@@ -1,15 +1,14 @@
-import { Router } from 'express';
 import session from 'express-session';
-import passport from 'passport';
-import GoogleStrategy from 'passport-google-oauth20';
-import pg from 'pg';
 import connectPgSimple from 'connect-pg-simple';
-import fs from 'fs';
-import ms from 'ms';
 import crypto from 'crypto';
 import { cleanEnv, str, url } from 'envalid';
-import { upsertUserOnGoogleLogin } from '../knex/loginknex';
-import logger from '../../setupPino';
+import fs from 'fs';
+import pg from 'pg';
+import ms from 'ms';
+import GoogleStrategy from 'passport-google-oauth20';
+import { upsertUserOnGoogleLoginDB } from '../../knex/authknex';
+
+import logger from '../../../setupPino';
 
 const env = cleanEnv(process.env, {
   GOOGLE_CLIENT_ID: str(),
@@ -37,8 +36,6 @@ try {
   process.exit(1);
 }
 
-const loginRouter = Router();
-
 const pgPool = new pg.Pool({
   host: DB_HOST,
   user: DB_USER,
@@ -50,7 +47,7 @@ const pgPool = new pg.Pool({
   connectionTimeoutMillis: 2000 // Timeout for new connections
 });
 
-loginRouter.use(session({
+export const setupSession = () => session({
   store: new SessionStore({
     pool: pgPool,
     tableName: 'session'
@@ -64,59 +61,30 @@ loginRouter.use(session({
     maxAge: ms('1 year'),
     sameSite: 'strict'
   }
-}));
+});
 
-// Middleware for routes
-loginRouter.use(passport.initialize());
-loginRouter.use(passport.session());
-
-/**
- * Configures Google OAuth strategy for Passport.js.
- * @param {string} accessToken - OAuth access token
- * @param {string} refreshToken - OAuth refresh token
- * @param {object} profile - Google user profile
- * @param {function} callback - Passport callback
- */
-passport.use(new GoogleStrategy(
+export const googleStrategy = () => new GoogleStrategy(
   {
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: '/auth/google/callback'
+    callbackURL: '/api/auth/google/callback'
   },
   async (accessToken, refreshToken, profile, callback) => {
     // fetch or create user here based on profile data
     try {
-      const user = await upsertUserOnGoogleLogin(profile);
+      const user = await upsertUserOnGoogleLoginDB(profile);
       callback(null, user);
     } catch (err) {
       callback(err);
     }
   }
-));
-
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-
-passport.deserializeUser((obj, done) => {
-  done(null, obj);
-});
-
-// Routes for Google authentication
-loginRouter.get(
-  '/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-loginRouter.get(
-  '/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    res.redirect(`${FRONTEND_ORIGIN.split(',')[0]}/?auth=success`);
-  }
-);
+export const redirect = (req, res) => {
+  res.redirect(`${FRONTEND_ORIGIN.split(',')[0]}/?auth=success`);
+};
 
-loginRouter.get('/', (req, res) => {
+export const getAuthstatus = (req, res) => {
   if (req.user) {
     res.json({
       isLoggedIn: true,
@@ -135,19 +103,16 @@ loginRouter.get('/', (req, res) => {
       isLoggedIn: false
     });
   }
-});
+};
 
-// Logout route
-loginRouter.get('/logout', (req, res) => {
+export const logout = (req, res) => {
   req.logout((err) => {
     if (err) {
       logger.error(err);
       res.status(500).send('An error occurred while logging out');
     } else {
       res.clearCookie('connect.sid');
-      res.redirect('/');
+      res.json({ success: true });
     }
   });
-});
-
-export default loginRouter;
+};
