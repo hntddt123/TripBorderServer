@@ -10,12 +10,13 @@ import {
   updateMileagesDB
 } from '../../knex/mileageknex';
 import logger from '../../../setupPino';
+import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
 
 export const getAllMileagePagination = async (req, res) => {
   try {
-    const page = req.query.page || 1;
-    const limit = req.query.limit || 10;
-    const offset = (page - 1) * limit;
+    const { page } = req.query;
+    const limit = getPaginationLimit(req);
+    const offset = getPaginationOffset(req);
 
     const totalResult = await getMileagesTotalCountDB();
     const total = parseInt(totalResult.total, 10);

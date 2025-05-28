@@ -4,14 +4,11 @@ export const updateUserDB = async (uuid, updateData) => knexDBInstance('user_acc
   .where('uuid', uuid)
   .update(updateData);
 
-export const getAllUsersDB = async () => knexDBInstance('user_accounts')
-  .select(
-    'uuid',
-    'provider',
-    'provider_user_id',
-    'email',
-    'name',
-    'created_at',
-    'updated_at',
-    'role'
-  );
+export const getUsersTotalCountDB = async () => knexDBInstance('user_accounts')
+  .count('* as total')
+  .first();
+
+export const getUsersPaginationDB = async (limit, offset) => knexDBInstance('user_accounts')
+  .limit(limit)
+  .offset(offset)
+  .orderBy('created_at', 'desc');
