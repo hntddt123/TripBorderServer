@@ -14,9 +14,12 @@
     "test:watch": "jest --watchAll",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
     "lintfix": "eslint --fix '**/*.{js,jsx,ts,tsx}'",
-    "migrate": "knex migrate:latest",
-    "rollback": "knex migrate:rollback",
-    "seed": "knex seed:run"
+    "migrate:dev": "NODE_ENV=development docker-compose -f compose.dev.yml exec server npx knex migrate:latest --knexfile knexfile.js",
+    "rollback:dev": "NODE_ENV=development docker-compose -f compose.dev.yml exec server npx knex migrate:rollback --knexfile knexfile.js",
+    "status:dev": "NODE_ENV=development docker-compose -f compose.dev.yml exec server npx knex migrate:status --knexfile knexfile.js",
+    "migrate:staging": "NODE_ENV=staging docker-compose -f compose.dev.yml exec server npx knex migrate:latest --knexfile knexfile.js",
+    "rollback:staging": "NODE_ENV=staging docker-compose -f compose.dev.yml exec server npx knex migrate:rollback --knexfile knexfile.js",
+    "status:staging": "NODE_ENV=staging docker-compose -f compose.dev.yml exec server npx knex migrate:status --knexfile knexfile.js"
   },
   "license": "ISC",
   "dependencies": {

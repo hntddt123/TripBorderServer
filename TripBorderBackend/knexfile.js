@@ -30,22 +30,26 @@ export default {
     },
   },
 
-  // staging: {
-  //   client: 'postgresql',
-  //   connection: {
-  //     host: process.env.DB_HOST,
-  //     user: process.env.DB_USER,
-  //     password: process.env.DB_PASSWORD,
-  //     database: process.env.DB_NAME,
-  //   },
-  //   pool: {
-  //     min: 2,
-  //     max: 10
-  //   },
-  //   migrations: {
-  //     tableName: 'knex_migrations'
-  //   }
-  // },
+  staging: {
+    client: 'postgresql',
+    connection: {
+      host: process.env.STAGING_DB_HOST || process.env.DB_HOST,
+      user: process.env.STAGING_DB_USER || process.env.DB_USER,
+      password: DB_PASSWORD,
+      database: process.env.STAGING_DB_NAME || process.env.DB_NAME,
+    },
+    pool: {
+      min: 2,
+      max: 10
+    },
+    migrations: {
+      directory: './migrations',
+      tableName: 'knex_migrations'
+    },
+    seeds: {
+      directory: './seeds',
+    },
+  },
 
   production: {
     client: 'postgresql',

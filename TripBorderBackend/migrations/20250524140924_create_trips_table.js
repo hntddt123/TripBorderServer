@@ -19,7 +19,7 @@ exports.up = async function createTrips(knex) {
   });
 
   await knex.schema.createTable('meals', (table) => {
-    table.increments('id').primary();
+    table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
     table
       .foreign('trips_uuid')
@@ -31,8 +31,8 @@ exports.up = async function createTrips(knex) {
     table.timestamp('meal_time');
   });
 
-  await knex.schema.createTable('point_of_interests', (table) => {
-    table.increments('id').primary();
+  await knex.schema.createTable('points_of_interest', (table) => {
+    table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
     table
       .foreign('trips_uuid')
@@ -44,7 +44,7 @@ exports.up = async function createTrips(knex) {
   });
 
   await knex.schema.createTable('hotels', (table) => {
-    table.increments('id').primary();
+    table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
     table
       .foreign('trips_uuid')
@@ -59,7 +59,7 @@ exports.up = async function createTrips(knex) {
   });
 
   await knex.schema.createTable('transports', (table) => {
-    table.increments('id').primary();
+    table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
     table
       .foreign('trips_uuid')
@@ -78,36 +78,36 @@ exports.up = async function createTrips(knex) {
   });
 
   await knex.schema.createTable('tags', (table) => {
-    table.increments('id').primary();
+    table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.string('name').notNullable().unique(); // E.g., "beach", "hiking"
   });
 
   await knex.schema.createTable('trip_tags', (table) => {
-    table.increments('id').primary();
+    table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable(); // Foreign key to trips
     table
       .foreign('trips_uuid')
       .references('uuid')
       .inTable('trips')
       .onDelete('CASCADE');
-    table.integer('tag_id').unsigned().notNullable(); // Foreign key to tags
+    table.uuid('tags_uuid').notNullable(); // Foreign key to tags
     table
-      .foreign('tag_id')
-      .references('id')
+      .foreign('tags_uuid')
+      .references('uuid')
       .inTable('tags')
       .onDelete('CASCADE');
-    table.unique(['trips_uuid', 'tag_id']); // Prevent duplicate trip-tag pairs
+    table.unique(['trips_uuid', 'tags_uuid']); // Prevent duplicate trip-tag pairs
   });
 
   await knex.schema.createTable('ratings', (table) => {
-    table.increments('id').primary();
+    table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
     table
       .foreign('trips_uuid')
       .references('uuid')
       .inTable('trips')
       .onDelete('CASCADE');
-    table.integer('entity_id').unsigned().notNullable(); // must be validated in the app
+    table.uuid('entity_id').notNullable(); // must be validated in the app
     table.string('entity_type').notNullable();
     table.string('comment');
     table.integer('score').notNullable();
@@ -132,7 +132,7 @@ exports.down = async function dropTrips(knex) {
   await knex.schema.dropTableIfExists('tags');
   await knex.schema.dropTableIfExists('transports');
   await knex.schema.dropTableIfExists('hotels');
-  await knex.schema.dropTableIfExists('points_of_interests');
+  await knex.schema.dropTableIfExists('points_of_interest');
   await knex.schema.dropTableIfExists('meals');
   await knex.schema.dropTableIfExists('trips');
 };
