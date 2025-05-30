@@ -43,9 +43,9 @@ export const getAllMileagePagination = async (req, res) => {
 
 export const getMileagesSelling = async (req, res) => {
   try {
-    const page = req.query.page || 1;
-    const limit = req.query.limit || 10;
-    const offset = (page - 1) * limit;
+    const { page } = req.query;
+    const limit = getPaginationLimit(req);
+    const offset = getPaginationOffset(req);
 
     const totalResult = await getAllVerifiedAndListedMileagesDB();
     const total = parseInt(totalResult.total, 10);
@@ -73,9 +73,9 @@ export const getMileagesSelling = async (req, res) => {
 export const getMileagesByEmail = async (req, res) => {
   try {
     const ownerEmail = req.body.email;
-    const page = req.body.page || 1;
-    const limit = req.body.limit || 10;
-    const offset = (page - 1) * limit;
+    const { page } = req.query;
+    const limit = getPaginationLimit(req);
+    const offset = getPaginationOffset(req);
 
     const totalResult = await getMileagesTotalCountByEmailDB(ownerEmail);
     const total = parseInt(totalResult.total, 10);

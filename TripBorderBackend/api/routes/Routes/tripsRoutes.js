@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { getAllTrips } from '../controllers/tripsController';
+import { getAllTripsPagination, getTripsByEmailPagination } from '../controllers/tripsController';
 
 const tripsRouter = Router();
 
-tripsRouter.get('/', getAllTrips);
-// tripsRouter('/', getTripsByEmail);
+tripsRouter.get('/', getAllTripsPagination);
+tripsRouter.get('/', getTripsByEmailPagination);
 
 export default tripsRouter;

@@ -2,7 +2,7 @@ import { getUsersPaginationDB, getUsersTotalCountDB, updateUserDB } from '../../
 import logger from '../../../setupPino';
 import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
 
-export const getAllUsers = async (req, res) => {
+export const getAllUsersPagination = async (req, res) => {
   try {
     const { page } = req.query;
     const limit = getPaginationLimit(req);
@@ -26,7 +26,7 @@ export const getAllUsers = async (req, res) => {
       page
     });
   } catch (error) {
-    logger.error(`Error Fetching User ${error}`);
+    logger.error(`Error Fetching Users ${error}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
