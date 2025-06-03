@@ -42,6 +42,7 @@ export const httpLogger = PinoHttp({
   // Custom request/response serializers
   serializers: {
     req: (req) => ({
+      url: req.url,
       remoteAddress: req.remoteAddress,
       headers: { host: req.headers.host, 'user-agent': req.headers['user-agent'] },
     }),

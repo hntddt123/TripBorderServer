@@ -39,6 +39,7 @@ module.exports = {
     'jsx-quotes': ['warn', 'prefer-single'],
     'default-param-last': 'off',
     'no-restricted-globals': 'warn',
-    'prefer-destructuring': 'warn'
+    'prefer-destructuring': 'warn',
+    'import/no-extraneous-dependencies': 'off'
   }
 };

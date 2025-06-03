@@ -1,9 +1,14 @@
 import { knexDBInstance } from './knexDBInstance';
 
-export async function updateUser(uuid, updateData) {
-  const updatedRows = await knexDBInstance('user_accounts')
-    .where('uuid', uuid)
-    .update(updateData);
+export const updateUserDB = async (uuid, updateData) => knexDBInstance('user_accounts')
+  .where('uuid', uuid)
+  .update(updateData);
 
-  return updatedRows;
-}
+export const getUsersTotalCountDB = async () => knexDBInstance('user_accounts')
+  .count('* as total')
+  .first();
+
+export const getUsersPaginationDB = async (limit, offset) => knexDBInstance('user_accounts')
+  .limit(limit)
+  .offset(offset)
+  .orderBy('created_at', 'desc');

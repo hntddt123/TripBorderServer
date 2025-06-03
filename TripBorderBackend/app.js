@@ -5,7 +5,6 @@ import helmet from 'helmet';
 import https from 'https';
 import fs from 'fs';
 import cors from 'cors';
-import loginRouter from './api/routes/login';
 import apiRouter from './api/routes/api';
 import logger, { httpLogger } from './setupPino';
 
@@ -45,13 +44,18 @@ const options = {
 
 const httpsServer = https.createServer(options, app);
 
-app.use(loginRouter);
-app.use(apiRouter);
+app.use('/api', apiRouter);
+
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit to 100 requests per window
   message: 'Too many requests from this IP, please try again later.'
 }));
+
+app.use((err, req, res, next) => {
+  logger.error('Unexpected error:', err.message, err.stack);
+  res.status(500).json({ message: `Internal server error: ${err.message}` });
+});
 
 app.get('/easteregg', (req, res) => {
   logger.info('Found an egg');

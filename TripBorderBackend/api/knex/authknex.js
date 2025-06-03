@@ -1,6 +1,6 @@
 import { knexDBInstance } from './knexDBInstance';
 
-export async function upsertUserOnGoogleLogin(profile) {
+export async function upsertUserOnGoogleLoginDB(profile) {
   let user = await knexDBInstance('user_accounts')
     .where({ provider_user_id: profile.id })
     .first();
