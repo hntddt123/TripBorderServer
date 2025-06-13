@@ -4,6 +4,6 @@ import { getAllTripsPagination, getTripsByEmailPagination } from '../controllers
 const tripsRouter = Router();
 
 tripsRouter.get('/', getAllTripsPagination);
-tripsRouter.get('/', getTripsByEmailPagination);
+tripsRouter.post('/tripsbyemail', getTripsByEmailPagination);
 
 export default tripsRouter;

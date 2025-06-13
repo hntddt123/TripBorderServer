@@ -1,7 +1,7 @@
 import logger from '../../../setupPino';
 import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
-import { getTripTagsPaginationDB } from '../../knex/trip_tagsknex';
+import { getTripTagsPaginationDB, getTripTagsbyTripDB } from '../../knex/trip_tagsknex';
 
 export const getAllTripTagsPagination = async (req, res) => {
   try {
@@ -26,6 +26,18 @@ export const getAllTripTagsPagination = async (req, res) => {
       totalPages,
       page
     });
+  } catch (error) {
+    logger.error(`Error Fetching tripTags ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getTripTagsByTrip = async (req, res) => {
+  try {
+    const { tripID } = req.body;
+    const tripTags = await getTripTagsbyTripDB(tripID);
+
+    res.json({ tripTags });
   } catch (error) {
     logger.error(`Error Fetching tripTags ${error}`);
     res.status(500).json({ error: 'Internal server error' });

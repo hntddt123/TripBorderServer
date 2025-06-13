@@ -2,6 +2,7 @@ import logger from '../../../setupPino';
 import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
 import { getRatingsPaginationDB } from '../../knex/ratingsknex';
+import { getResourcesByTripID } from './utility/genericControllerUtility';
 
 export const getAllRatingsPagination = async (req, res) => {
   try {
@@ -31,3 +32,8 @@ export const getAllRatingsPagination = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getRatingsByTrip = async (req, res) => getResourcesByTripID(req, res, {
+  resourceName: 'ratings',
+  orderBy: 'created_at'
+});
