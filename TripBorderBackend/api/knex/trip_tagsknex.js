@@ -9,3 +9,4 @@ export const getTripTagsbyTripDB = async (tripsUUID) => knexDBInstance('trip_tag
   .select('tags.uuid', 'tags.name') // Fetch relevant tag fields
   .innerJoin('tags', 'trip_tags.tags_uuid', 'tags.uuid')
   .where('trip_tags.trips_uuid', tripsUUID);
+
