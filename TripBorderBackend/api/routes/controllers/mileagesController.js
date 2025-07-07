@@ -100,7 +100,7 @@ export const getMileagesByEmail = async (req, res) => {
   }
 };
 
-export const postMileagesByEmail = async (req, res) => {
+export const postMileages = async (req, res) => {
   const newMileage = req.body.data;
 
   try {
