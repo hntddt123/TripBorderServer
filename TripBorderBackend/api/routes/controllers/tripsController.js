@@ -1,11 +1,11 @@
 import {
   getTripsTotalCountDB,
   getTripsPaginationDB,
-  getTripsByEmailPaginationDB
+  getTripsByUUIDDB,
+  insertTripsDB
 } from '../../knex/tripsknex';
 import logger from '../../../setupPino';
 import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
-import { getResourcesByEmailPaginationDB, getTableTotalCountByEmailDB } from '../../knex/utilityknex';
 import { getResourcesByEmailPagination } from './utility/genericControllerUtility';
 
 export const getAllTripsPagination = async (req, res) => {
@@ -37,6 +37,30 @@ export const getAllTripsPagination = async (req, res) => {
   }
 };
 
+export const getTripByUUID = async (req, res) => {
+  try {
+    const { uuid } = req.query;
+    const trips = await getTripsByUUIDDB(uuid);
+
+    res.json({ trips });
+  } catch (error) {
+    logger.error(`Error Fetching trips ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const getTripsByEmailPagination = async (req, res) => getResourcesByEmailPagination(req, res, {
   resourceName: 'trips'
 });
+
+export const postTrips = async (req, res) => {
+  const newTrip = req.body.data;
+
+  try {
+    await insertTripsDB(newTrip);
+    res.json({ message: 'Trip Created!' });
+  } catch (error) {
+    logger.error(`Error in creating Trip: ${error}`);
+    res.status(500).send({ error: 'Failed to create Trip' });
+  }
+};
