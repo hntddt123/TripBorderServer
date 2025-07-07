@@ -17,6 +17,7 @@ exports.up = function createMileagesTable(knex) {
     table.timestamp('created_at').defaultTo(knex.fn.now());
     table.timestamp('updated_at').defaultTo(knex.fn.now());
     table.string('owner_email').notNullable();
+
     table
       .foreign('owner_email')
       .references('email')

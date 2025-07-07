@@ -7,65 +7,63 @@ exports.up = async function createTrips(knex) {
     table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.string('title').notNullable(); // trip name
     table.string('owner_email').notNullable();
+    table.date('start_date');
+    table.date('end_date');
+    table.timestamp('created_at').defaultTo(knex.fn.now());
+    table.timestamp('updated_at').defaultTo(knex.fn.now());
+
     table
       .foreign('owner_email')
       .references('email')
       .inTable('user_accounts')
       .onDelete('CASCADE');
-    table.date('start_date');
-    table.date('end_date');
-    table.timestamp('created_at').defaultTo(knex.fn.now());
-    table.timestamp('updated_at').defaultTo(knex.fn.now());
   });
 
   await knex.schema.createTable('meals', (table) => {
     table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
+    table.string('name').notNullable();
+    table.string('address'); // restaurant address
+    table.timestamp('meal_time');
+
     table
       .foreign('trips_uuid')
       .references('uuid')
       .inTable('trips')
       .onDelete('CASCADE');
-    table.string('name').notNullable();
-    table.string('address'); // restaurant address
-    table.timestamp('meal_time');
   });
 
   await knex.schema.createTable('points_of_interest', (table) => {
     table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
+    table.string('name').notNullable();
+    table.string('address');
+
     table
       .foreign('trips_uuid')
       .references('uuid')
       .inTable('trips')
       .onDelete('CASCADE');
-    table.string('name').notNullable();
-    table.string('address');
   });
 
   await knex.schema.createTable('hotels', (table) => {
     table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
-    table
-      .foreign('trips_uuid')
-      .references('uuid')
-      .inTable('trips')
-      .onDelete('CASCADE');
     table.string('name').notNullable();
     table.string('address');
     table.date('check_in');
     table.date('check_out');
     table.string('booking_reference');
+
+    table.foreign('trips_uuid')
+      .references('uuid')
+      .inTable('trips')
+      .onDelete('CASCADE');
   });
 
   await knex.schema.createTable('transports', (table) => {
     table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
-    table
-      .foreign('trips_uuid')
-      .references('uuid')
-      .inTable('trips')
-      .onDelete('CASCADE');
     table.string('name').notNullable();
     table.string('type').notNullable();
     table.string('address');
@@ -75,6 +73,12 @@ exports.up = async function createTrips(knex) {
     table.timestamp('arrival_time');
     table.string('origin');
     table.string('destination');
+
+    table
+      .foreign('trips_uuid')
+      .references('uuid')
+      .inTable('trips')
+      .onDelete('CASCADE');
   });
 
   await knex.schema.createTable('tags', (table) => {
@@ -85,40 +89,42 @@ exports.up = async function createTrips(knex) {
   await knex.schema.createTable('trip_tags', (table) => {
     table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable(); // Foreign key to trips
+    table.uuid('tags_uuid').notNullable(); // Foreign key to tags
+    table.unique(['trips_uuid', 'tags_uuid']); // Prevent duplicate trip-tag pairs
+
     table
       .foreign('trips_uuid')
       .references('uuid')
       .inTable('trips')
       .onDelete('CASCADE');
-    table.uuid('tags_uuid').notNullable(); // Foreign key to tags
     table
       .foreign('tags_uuid')
       .references('uuid')
       .inTable('tags')
       .onDelete('CASCADE');
-    table.unique(['trips_uuid', 'tags_uuid']); // Prevent duplicate trip-tag pairs
   });
 
   await knex.schema.createTable('ratings', (table) => {
     table.uuid('uuid').primary().defaultTo(knex.fn.uuid());
     table.uuid('trips_uuid').notNullable();
-    table
-      .foreign('trips_uuid')
-      .references('uuid')
-      .inTable('trips')
-      .onDelete('CASCADE');
     table.uuid('entity_id').notNullable(); // must be validated in the app
     table.string('entity_type').notNullable();
     table.string('comment');
     table.integer('score').notNullable();
     table.string('owner_email').notNullable();
+    table.timestamp('created_at').defaultTo(knex.fn.now());
+    table.timestamp('updated_at').defaultTo(knex.fn.now());
+
+    table
+      .foreign('trips_uuid')
+      .references('uuid')
+      .inTable('trips')
+      .onDelete('CASCADE');
     table
       .foreign('owner_email')
       .references('email')
       .inTable('user_accounts')
       .onDelete('CASCADE');
-    table.timestamp('created_at').defaultTo(knex.fn.now());
-    table.timestamp('updated_at').defaultTo(knex.fn.now());
   });
 };
 
