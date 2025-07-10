@@ -2,7 +2,9 @@ import {
   getTripsTotalCountDB,
   getTripsPaginationDB,
   getTripsByUUIDDB,
-  insertTripsDB
+  initTripsDB,
+  updateTripsDB,
+  deleteTripsDB
 } from '../../knex/tripsknex';
 import logger from '../../../setupPino';
 import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
@@ -53,14 +55,48 @@ export const getTripsByEmailPagination = async (req, res) => getResourcesByEmail
   resourceName: 'trips'
 });
 
-export const postTrips = async (req, res) => {
-  const newTrip = req.body.data;
+export const initTrips = async (req, res) => {
+  const ownerEmail = req.body.data;
 
   try {
-    await insertTripsDB(newTrip);
-    res.json({ message: 'Trip Created!' });
+    const trip = await initTripsDB(ownerEmail);
+    logger.debug(trip);
+    res.json({
+      trip: trip,
+      message: 'Trip Created!'
+    });
   } catch (error) {
     logger.error(`Error in creating Trip: ${error}`);
     res.status(500).send({ error: 'Failed to create Trip' });
+  }
+};
+
+export const updateTrips = async (req, res) => {
+  const { uuid } = req.params;
+  const updateData = {};
+
+  try {
+    const updatedRows = await updateTripsDB(uuid, updateData);
+
+    if (updatedRows.length === 0) {
+      res.status(404).json({ error: 'Trips not found' });
+    }
+
+    res.json({ message: 'Trips Updated!' });
+  } catch (error) {
+    logger.error(`Error in updating Trips: ${error}`);
+    res.status(500).send({ error: 'Failed to update Trips' });
+  }
+};
+
+export const deleteTripsByID = async (req, res) => {
+  const tripID = req.body.data;
+
+  try {
+    await deleteTripsDB(tripID);
+    res.json({ message: 'Mileage Removed!' });
+  } catch (error) {
+    logger.error(`Error in removing Mileage: ${error}`);
+    res.status(500).send({ error: 'Failed to remove Mileage' });
   }
 };

@@ -3,7 +3,9 @@ import {
   getAllTripsPagination,
   getTripsByEmailPagination,
   getTripByUUID,
-  postTrips
+  initTrips,
+  deleteTripsByID,
+  updateTrips
 } from '../controllers/tripsController';
 
 const tripsRouter = Router();
@@ -11,6 +13,8 @@ const tripsRouter = Router();
 tripsRouter.get('/', getAllTripsPagination);
 tripsRouter.post('/tripsbyemail', getTripsByEmailPagination);
 tripsRouter.post('/tripsbyuuid', getTripByUUID);
-tripsRouter.post('/upload', postTrips);
+tripsRouter.post('/init', initTrips);
+tripsRouter.delete('/removebyid', deleteTripsByID);
+tripsRouter.patch('/update/:uuid', updateTrips);
 
 export default tripsRouter;
