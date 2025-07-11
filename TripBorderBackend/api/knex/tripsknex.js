@@ -28,8 +28,8 @@ export const initTripsDB = async (ownerEmail) => knexDBInstance('trips').insert(
   uuid: knexDBInstance.fn.uuid(),
   title: 'New Trip',
   owner_email: ownerEmail,
-  start_date: knexDBInstance.fn.now(),
-  end_date: knexDBInstance.fn.now(),
+  start_date: null,
+  end_date: null,
   created_at: knexDBInstance.fn.now(),
   updated_at: knexDBInstance.fn.now()
 }).returning('*')

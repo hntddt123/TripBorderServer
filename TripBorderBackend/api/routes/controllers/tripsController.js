@@ -73,7 +73,7 @@ export const initTrips = async (req, res) => {
 
 export const updateTrips = async (req, res) => {
   const { uuid } = req.params;
-  const updateData = {};
+  const updateData = req.body.data;
 
   try {
     const updatedRows = await updateTripsDB(uuid, updateData);
