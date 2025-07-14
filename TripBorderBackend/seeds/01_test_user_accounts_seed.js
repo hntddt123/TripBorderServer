@@ -1,4 +1,7 @@
+const { default: logger } = require('../setupPino');
+
 exports.seed = async function usersSeed(knex) {
+  logger.debug('Running 01_test_user_accounts_seed');
   // Deletes ALL existing entries
   await knex('user_accounts')
     .insert([
