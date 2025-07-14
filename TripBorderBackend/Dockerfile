@@ -15,6 +15,9 @@ WORKDIR /src
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
+# Make sure latest npm is intstalled
+RUN npm install -g npm
+
 # Install dependencies
 RUN npm i
 

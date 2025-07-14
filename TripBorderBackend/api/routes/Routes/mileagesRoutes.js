@@ -3,7 +3,7 @@ import {
   getAllMileagePagination,
   getMileagesSelling,
   getMileagesByEmail,
-  postMileagesByEmail,
+  postMileages,
   deleteMileagesByID,
   updateMileages
 } from '../controllers/mileagesController';
@@ -13,7 +13,7 @@ const mileagesRouter = Router();
 mileagesRouter.get('/', getAllMileagePagination);
 mileagesRouter.get('/selling', getMileagesSelling);
 mileagesRouter.post('/mileagesbyemail', getMileagesByEmail);
-mileagesRouter.post('/upload', postMileagesByEmail);
+mileagesRouter.post('/upload', postMileages);
 mileagesRouter.delete('/removebyid', deleteMileagesByID);
 mileagesRouter.patch('/update/:uuid', updateMileages);
 

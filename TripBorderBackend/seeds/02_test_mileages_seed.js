@@ -1,4 +1,8 @@
+const { default: logger } = require('../setupPino');
+
 exports.seed = async function mileagesSeed(knex) {
+  logger.debug('Running 02_test_mileages_seed');
+
   const validEmails = await knex('user_accounts')
     .select('email')
     .then((rows) => rows.map((row) => row.email));

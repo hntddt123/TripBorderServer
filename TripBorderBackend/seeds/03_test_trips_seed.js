@@ -4,6 +4,7 @@ const { default: logger } = require('../setupPino');
  * @returns { Promise<void> }
  */
 exports.seed = async function tripsSeed(knex) {
+  logger.debug('Running 03_test_trips_seed');
   const validEmails = await knex('user_accounts')
     .select('email')
     .then((rows) => rows.map((row) => row.email));

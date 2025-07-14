@@ -1,14 +1,13 @@
 import logger from '../../../setupPino';
-import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
+import { getPaginationOffset } from './utility/paginationUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
 import { getHotelsPaginationDB } from '../../knex/hotelsknex';
 import { getResourcesByTripID } from './utility/genericControllerUtility';
 
 export const getAllHotelsPagination = async (req, res) => {
   try {
-    const { page } = req.query;
-    const limit = getPaginationLimit(req);
-    const offset = getPaginationOffset(req);
+    const { page, limit } = req.query;
+    const offset = getPaginationOffset(page, limit);
 
     const totalResult = await getTableTotalCountDB('hotels');
     const total = parseInt(totalResult.total, 10);
