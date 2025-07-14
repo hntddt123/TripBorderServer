@@ -10,13 +10,12 @@ import {
   updateMileagesDB
 } from '../../knex/mileageknex';
 import logger from '../../../setupPino';
-import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
+import { getPaginationOffset } from './utility/paginationUtility';
 
 export const getAllMileagePagination = async (req, res) => {
   try {
-    const { page } = req.query;
-    const limit = getPaginationLimit(req);
-    const offset = getPaginationOffset(req);
+    const { page, limit } = req.query;
+    const offset = getPaginationOffset(page, limit);
 
     const totalResult = await getMileagesTotalCountDB();
     const total = parseInt(totalResult.total, 10);
@@ -43,9 +42,8 @@ export const getAllMileagePagination = async (req, res) => {
 
 export const getMileagesSelling = async (req, res) => {
   try {
-    const { page } = req.query;
-    const limit = getPaginationLimit(req);
-    const offset = getPaginationOffset(req);
+    const { page, limit } = req.query;
+    const offset = getPaginationOffset(page, limit);
 
     const totalResult = await getAllVerifiedAndListedMileagesDB();
     const total = parseInt(totalResult.total, 10);
@@ -72,15 +70,13 @@ export const getMileagesSelling = async (req, res) => {
 
 export const getMileagesByEmail = async (req, res) => {
   try {
-    const ownerEmail = req.body.email;
-    const { page } = req.query;
-    const limit = getPaginationLimit(req);
-    const offset = getPaginationOffset(req);
+    const { email, page, limit } = req.body;
+    const offset = getPaginationOffset(page, limit);
 
-    const totalResult = await getMileagesTotalCountByEmailDB(ownerEmail);
+    const totalResult = await getMileagesTotalCountByEmailDB(email);
     const total = parseInt(totalResult.total, 10);
 
-    const mileages = await getMileagesByEmailPaginationDB(ownerEmail, limit, offset);
+    const mileages = await getMileagesByEmailPaginationDB(email, limit, offset);
 
     const totalPages = Math.ceil(total / limit);
 

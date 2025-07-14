@@ -7,14 +7,13 @@ import {
   deleteTripsDB
 } from '../../knex/tripsknex';
 import logger from '../../../setupPino';
-import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
+import { getPaginationOffset } from './utility/paginationUtility';
 import { getResourcesByEmailPagination } from './utility/genericControllerUtility';
 
 export const getAllTripsPagination = async (req, res) => {
   try {
-    const { page } = req.query;
-    const limit = getPaginationLimit(req);
-    const offset = getPaginationOffset(req);
+    const { page, limit } = req.query;
+    const offset = getPaginationOffset(page, limit);
 
     const totalResult = await getTripsTotalCountDB();
     const total = parseInt(totalResult.total, 10);
@@ -41,7 +40,7 @@ export const getAllTripsPagination = async (req, res) => {
 
 export const getTripByUUID = async (req, res) => {
   try {
-    const { uuid } = req.query;
+    const uuid = req.body.data;
     const trips = await getTripsByUUIDDB(uuid);
 
     res.json({ trips });
@@ -60,7 +59,7 @@ export const initTrips = async (req, res) => {
 
   try {
     const trip = await initTripsDB(ownerEmail);
-    logger.debug(trip);
+
     res.json({
       trip: trip,
       message: 'Trip Created!'

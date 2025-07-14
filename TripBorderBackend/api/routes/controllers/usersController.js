@@ -1,12 +1,11 @@
 import { getUsersPaginationDB, getUsersTotalCountDB, updateUserDB } from '../../knex/userknex';
 import logger from '../../../setupPino';
-import { getPaginationLimit, getPaginationOffset } from './utility/paginationUtility';
+import { getPaginationOffset } from './utility/paginationUtility';
 
 export const getAllUsersPagination = async (req, res) => {
   try {
-    const { page } = req.query;
-    const limit = getPaginationLimit(req);
-    const offset = getPaginationOffset(req);
+    const { page, limit } = req.query;
+    const offset = getPaginationOffset(page, limit);
 
     const totalResult = await getUsersTotalCountDB();
     const total = parseInt(totalResult.total, 10);

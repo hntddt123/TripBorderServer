@@ -11,7 +11,7 @@ import {
 const tripsRouter = Router();
 
 tripsRouter.get('/', getAllTripsPagination);
-tripsRouter.post('/tripsbyemail', getTripsByEmailPagination);
+tripsRouter.post('/tripsbyemailpagination', getTripsByEmailPagination);
 tripsRouter.post('/tripsbyuuid', getTripByUUID);
 tripsRouter.post('/init', initTrips);
 tripsRouter.delete('/removebyid', deleteTripsByID);

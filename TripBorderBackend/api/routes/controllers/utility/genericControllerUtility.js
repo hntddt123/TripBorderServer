@@ -5,21 +5,18 @@ import {
   getResourcesByTripIDDB
 } from '../../../knex/utilityknex';
 import {
-  getPaginationLimit,
   getPaginationOffset
 } from './paginationUtility';
 
 export const getResourcesByEmailPagination = async (req, res, { resourceName }) => {
   try {
-    const ownerEmail = req.body.email;
-    const { page } = req.query;
-    const limit = getPaginationLimit(req);
-    const offset = getPaginationOffset(req);
+    const { email, page, limit } = req.body;
+    const offset = getPaginationOffset(page, limit);
 
     const totalResult = await getTableTotalCountByEmailDB(
       resourceName,
       {
-        ownerEmail: ownerEmail
+        ownerEmail: email
       }
     );
     const total = parseInt(totalResult.total, 10);
@@ -27,7 +24,7 @@ export const getResourcesByEmailPagination = async (req, res, { resourceName }) 
     const resources = await getResourcesByEmailPaginationDB(
       resourceName,
       {
-        ownerEmail: ownerEmail,
+        ownerEmail: email,
         limit: limit,
         offset: offset
       }
