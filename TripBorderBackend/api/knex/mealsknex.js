@@ -20,5 +20,5 @@ export const deleteMealsByIDDB = async (mealID) => {
   const count = await knexDBInstance('meals')
     .where('uuid', mealID)
     .delete();
-  logger.info(`Deleted ${count} row(s)`);
+  logger.info(`Deleted ${count} row(s) of meal`);
 };

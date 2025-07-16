@@ -39,7 +39,7 @@ export const deleteTripsDB = async (tripID) => {
   const count = await knexDBInstance('trips')
     .where('uuid', tripID)
     .delete();
-  logger.info(`Deleted ${count} row(s)`);
+  logger.info(`Deleted ${count} row(s) of trip`);
 };
 
 export const updateTripsDB = async (uuid, updateData) => {

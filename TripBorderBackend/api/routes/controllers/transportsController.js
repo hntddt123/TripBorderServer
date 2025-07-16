@@ -1,7 +1,11 @@
 import logger from '../../../setupPino';
 import { getPaginationOffset } from './utility/paginationUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
-import { getTransportsPaginationDB } from '../../knex/transportsknex';
+import {
+  getTransportsPaginationDB,
+  createTransportByTripIDDB,
+  deleteTransportByIDDB
+} from '../../knex/transportsknex';
 import { getResourcesByTripID } from './utility/genericControllerUtility';
 
 export const getAllTransportsPagination = async (req, res) => {
@@ -36,3 +40,30 @@ export const getTransportsByTrip = async (req, res) => getResourcesByTripID(req,
   resourceName: 'transports',
   orderBy: 'departure_time'
 });
+
+export const createTransportByTrip = async (req, res) => {
+  try {
+    const transport = req.body.data;
+
+    const newTransport = await createTransportByTripIDDB(transport);
+
+    res.json({
+      transport: newTransport,
+    });
+  } catch (error) {
+    logger.error(`Error Creating Transport by trips_uuid ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const deleteTransportByID = async (req, res) => {
+  const TransportID = req.body.data;
+
+  try {
+    await deleteTransportByIDDB(TransportID);
+    res.json({ message: 'Transport Removed!' });
+  } catch (error) {
+    logger.error(`Error in removing Transport: ${error}`);
+    res.status(500).send({ error: 'Failed to remove Transport' });
+  }
+};
