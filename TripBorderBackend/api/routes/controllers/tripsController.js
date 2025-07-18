@@ -1,3 +1,6 @@
+import logger from '../../../setupPino';
+import { getPaginationOffset } from './utility/paginationUtility';
+import { getResourcesByEmailPagination } from './utility/genericControllerUtility';
 import {
   getTripsTotalCountDB,
   getTripsPaginationDB,
@@ -6,9 +9,6 @@ import {
   updateTripsDB,
   deleteTripsDB
 } from '../../knex/tripsknex';
-import logger from '../../../setupPino';
-import { getPaginationOffset } from './utility/paginationUtility';
-import { getResourcesByEmailPagination } from './utility/genericControllerUtility';
 
 export const getAllTripsPagination = async (req, res) => {
   try {

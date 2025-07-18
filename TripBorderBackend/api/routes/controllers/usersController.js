@@ -1,6 +1,10 @@
-import { getUsersPaginationDB, getUsersTotalCountDB, updateUserDB } from '../../knex/userknex';
 import logger from '../../../setupPino';
 import { getPaginationOffset } from './utility/paginationUtility';
+import {
+  getUsersPaginationDB,
+  getUsersTotalCountDB,
+  updateUserDB
+} from '../../knex/userknex';
 
 export const getAllUsersPagination = async (req, res) => {
   try {

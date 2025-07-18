@@ -1,12 +1,12 @@
 import logger from '../../../setupPino';
 import { getPaginationOffset } from './utility/paginationUtility';
+import { getResourcesByTripID } from './utility/genericControllerUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
 import {
   getPOIsPaginationDB,
   createPOIByTripIDDB,
   deletePOIByIDDB
 } from '../../knex/poiknex';
-import { getResourcesByTripID } from './utility/genericControllerUtility';
 
 export const getAllPOIsPagination = async (req, res) => {
   try {
