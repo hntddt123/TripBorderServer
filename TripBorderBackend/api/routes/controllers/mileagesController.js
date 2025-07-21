@@ -131,11 +131,11 @@ export const updateMileages = async (req, res) => {
   try {
     const updatedRows = await updateMileagesDB(uuid, updateData);
 
-    if (updatedRows.length === 0) {
+    if (updatedRows === 0) {
       res.status(404).json({ error: 'Mileage not found' });
+    } else {
+      res.json({ message: 'Mileage Updated!' });
     }
-
-    res.json({ message: 'Mileage Updated!' });
   } catch (error) {
     logger.error(`Error in updating Mileage: ${error}`);
     res.status(500).send({ error: 'Failed to update Mileage' });

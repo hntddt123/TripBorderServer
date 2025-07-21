@@ -24,3 +24,11 @@ export const deleteRatingByIDDB = async (ratingID) => {
     .delete();
   logger.info(`Deleted ${count} row(s) of rating`);
 };
+
+export const updateRatingDB = async (uuid, updateData) => {
+  const updatedRows = await knexDBInstance('ratings')
+    .where('uuid', uuid)
+    .update(updateData);
+
+  return updatedRows;
+};

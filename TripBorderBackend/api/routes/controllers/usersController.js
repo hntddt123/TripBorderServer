@@ -44,11 +44,11 @@ export const updateUser = async (req, res) => {
   try {
     const updatedRows = await updateUserDB(uuid, updateData);
 
-    if (updatedRows.length === 0) {
+    if (updatedRows === 0) {
       res.status(404).json({ error: 'User not found' });
+    } else {
+      res.json({ message: 'User Updated!' });
     }
-
-    res.json({ message: 'User Updated!' });
   } catch (error) {
     logger.error(`Error in updating User: ${error}`);
     res.status(500).send({ error: 'Failed to update User' });

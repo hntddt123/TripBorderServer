@@ -5,7 +5,8 @@ import { getTableTotalCountDB } from '../../knex/utilityknex';
 import {
   getRatingsPaginationDB,
   createRatingByTripIDDB,
-  deleteRatingByIDDB
+  deleteRatingByIDDB,
+  updateRatingDB
 } from '../../knex/ratingsknex';
 
 export const getAllRatingsPagination = async (req, res) => {
@@ -65,5 +66,22 @@ export const deleteRatingByID = async (req, res) => {
   } catch (error) {
     logger.error(`Error in removing Rating: ${error}`);
     res.status(500).send({ error: 'Failed to remove Rating' });
+  }
+};
+
+export const updateRating = async (req, res) => {
+  const { uuid } = req.params;
+  const updateData = req.body.data;
+  try {
+    const updatedRows = await updateRatingDB(uuid, updateData);
+
+    if (updatedRows === 0) {
+      res.status(404).json({ error: 'Rating not found' });
+    } else {
+      res.json({ message: 'Rating Updated!' });
+    }
+  } catch (error) {
+    logger.error(`Error in updating Rating: ${error}`);
+    res.status(500).send({ error: 'Failed to update Rating' });
   }
 };

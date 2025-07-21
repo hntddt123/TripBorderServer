@@ -77,11 +77,11 @@ export const updateTrips = async (req, res) => {
   try {
     const updatedRows = await updateTripsDB(uuid, updateData);
 
-    if (updatedRows.length === 0) {
+    if (updatedRows === 0) {
       res.status(404).json({ error: 'Trips not found' });
+    } else {
+      res.json({ message: 'Trips Updated!' });
     }
-
-    res.json({ message: 'Trips Updated!' });
   } catch (error) {
     logger.error(`Error in updating Trips: ${error}`);
     res.status(500).send({ error: 'Failed to update Trips' });
@@ -93,9 +93,9 @@ export const deleteTripsByID = async (req, res) => {
 
   try {
     await deleteTripsDB(tripID);
-    res.json({ message: 'Mileage Removed!' });
+    res.json({ message: 'Trip Removed!' });
   } catch (error) {
-    logger.error(`Error in removing Mileage: ${error}`);
-    res.status(500).send({ error: 'Failed to remove Mileage' });
+    logger.error(`Error in removing Trip: ${error}`);
+    res.status(500).send({ error: 'Failed to remove Trip' });
   }
 };
