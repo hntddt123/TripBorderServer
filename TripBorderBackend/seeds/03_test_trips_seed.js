@@ -126,8 +126,8 @@ exports.seed = async function tripsSeed(knex) {
   }
 
   const tags = [
-    { uuid: '550e8400-e29b-41d4-a716-446655440006', name: 'city' },
-    { uuid: '550e8400-e29b-41d4-a716-446655440007', name: 'culture' },
+    { uuid: '550e8400-e29b-41d4-a716-446655440006', name: 'city', owner_email: 'test@tripborder.com' },
+    { uuid: '550e8400-e29b-41d4-a716-446655440007', name: 'culture', owner_email: 'test@tripborder.com' }
   ];
 
   if (tags.length > 0) {

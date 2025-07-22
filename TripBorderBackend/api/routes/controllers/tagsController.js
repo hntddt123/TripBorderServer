@@ -1,6 +1,9 @@
 import logger from '../../../setupPino';
 import { getPaginationOffset } from './utility/paginationUtility';
-import { getTableTotalCountDB } from '../../knex/utilityknex';
+import { getResourcesByEmailPagination } from './utility/genericControllerUtility';
+import {
+  getTableTotalCountDB
+} from '../../knex/utilityknex';
 import {
   getTagsPaginationDB,
   createTagByTripIDDB,
@@ -34,6 +37,12 @@ export const getAllTagsPagination = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getTagsByEmailPagination = async (req, res) => getResourcesByEmailPagination(req, res, {
+  resourceName: 'tags',
+  orderBy: 'name',
+  orderPrecedence: 'desc'
+});
 
 export const createTagByTrip = async (req, res) => {
   try {

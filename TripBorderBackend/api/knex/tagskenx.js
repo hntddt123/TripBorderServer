@@ -9,8 +9,8 @@ export const getTagsPaginationDB = async (limit, offset) => knexDBInstance('tags
 export const createTagByTripIDDB = async (tag) => knexDBInstance('tags')
   .insert({
     uuid: knexDBInstance.fn.uuid(),
-    trips_uuid: tag.trips_uuid,
     name: tag.name,
+    owner_email: tag.owner_email
   }).returning('*')
   .then((rows) => rows[0]);
 

@@ -51,7 +51,9 @@ export const getTripByUUID = async (req, res) => {
 };
 
 export const getTripsByEmailPagination = async (req, res) => getResourcesByEmailPagination(req, res, {
-  resourceName: 'trips'
+  resourceName: 'trips',
+  orderBy: 'created_at',
+  orderPrecedence: 'desc'
 });
 
 export const initTrips = async (req, res) => {

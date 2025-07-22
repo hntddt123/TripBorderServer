@@ -4,8 +4,9 @@ import { getTableTotalCountDB } from '../../knex/utilityknex';
 import {
   getTripTagsPaginationDB,
   getTripTagsbyTripDB,
-  createTripTagByTripIDDB,
-  deleteTripTagByIDDB
+  createTripTagByTripIDAndTagIDDB,
+  deleteTripTagByIDDB,
+  isTripTagDuplicateDB
 } from '../../knex/triptagsknex';
 
 export const getAllTripTagsPagination = async (req, res) => {
@@ -36,7 +37,7 @@ export const getAllTripTagsPagination = async (req, res) => {
   }
 };
 
-export const getTripTagsByTrip = async (req, res) => {
+export const getTripTagsByTripID = async (req, res) => {
   try {
     const { tripID } = req.body;
     const tripTags = await getTripTagsbyTripDB(tripID);
@@ -48,14 +49,21 @@ export const getTripTagsByTrip = async (req, res) => {
   }
 };
 
-export const createTripTagByTrip = async (req, res) => {
+export const createTripTagByTripIDAndTagID = async (req, res) => {
   try {
     const tripTag = req.body.data;
 
-    const newTripTag = await createTripTagByTripIDDB(tripTag);
+    const existing = await isTripTagDuplicateDB(tripTag);
+    if (existing) {
+      res.status(409).json({
+        error: 'The triptag already exists'
+      });
+    }
+
+    const newTripTag = await createTripTagByTripIDAndTagIDDB(tripTag);
 
     res.json({
-      tag: newTripTag,
+      tripTag: newTripTag,
     });
   } catch (error) {
     logger.error(`Error Creating TripTag by trips_uuid ${error}`);
