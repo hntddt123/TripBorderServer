@@ -38,7 +38,8 @@ export const getAllHotelsPagination = async (req, res) => {
 
 export const getHotelsByTrip = async (req, res) => getResourcesByTripID(req, res, {
   resourceName: 'hotels',
-  orderBy: 'check_in'
+  orderBy: 'check_in',
+  orderPrecedence: 'asc'
 });
 
 export const createHotelsByTrip = async (req, res) => {

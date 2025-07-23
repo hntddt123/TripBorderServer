@@ -38,7 +38,8 @@ export const getAllTransportsPagination = async (req, res) => {
 
 export const getTransportsByTrip = async (req, res) => getResourcesByTripID(req, res, {
   resourceName: 'transports',
-  orderBy: 'departure_time'
+  orderBy: 'departure_time',
+  orderPrecedence: 'asc'
 });
 
 export const createTransportByTrip = async (req, res) => {

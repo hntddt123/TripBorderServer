@@ -39,7 +39,8 @@ export const getAllRatingsPagination = async (req, res) => {
 
 export const getRatingsByTrip = async (req, res) => getResourcesByTripID(req, res, {
   resourceName: 'ratings',
-  orderBy: 'created_at'
+  orderBy: 'created_at',
+  orderPrecedence: 'asc'
 });
 
 export const createRatingByTrip = async (req, res) => {

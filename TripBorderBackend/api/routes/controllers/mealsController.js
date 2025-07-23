@@ -38,7 +38,8 @@ export const getAllMealsPagination = async (req, res) => {
 
 export const getMealsByTrip = async (req, res) => getResourcesByTripID(req, res, {
   resourceName: 'meals',
-  orderBy: 'meal_time'
+  orderBy: 'meal_time',
+  orderPrecedence: 'asc'
 });
 
 export const createMealsByTrip = async (req, res) => {

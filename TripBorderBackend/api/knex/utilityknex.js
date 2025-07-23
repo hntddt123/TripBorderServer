@@ -24,6 +24,6 @@ export const getResourcesByEmailPaginationDB = async (
   .offset(offset)
   .orderBy(orderBy, orderPrecedence);
 
-export const getResourcesByTripIDDB = async (tableName, { tripID, orderBy }) => knexDBInstance(tableName)
+export const getResourcesByTripIDDB = async (tableName, { tripID, orderBy, orderPrecedence }) => knexDBInstance(tableName)
   .where({ trips_uuid: tripID })
-  .orderBy(orderBy, 'desc');
+  .orderBy(orderBy, orderPrecedence);

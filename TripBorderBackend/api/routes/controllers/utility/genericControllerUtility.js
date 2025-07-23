@@ -50,7 +50,7 @@ export const getResourcesByEmailPagination = async (req, res, { resourceName, or
   }
 };
 
-export const getResourcesByTripID = async (req, res, { resourceName, orderBy }) => {
+export const getResourcesByTripID = async (req, res, { resourceName, orderBy, orderPrecedence }) => {
   try {
     const { tripID } = req.body;
 
@@ -58,7 +58,8 @@ export const getResourcesByTripID = async (req, res, { resourceName, orderBy }) 
       resourceName,
       {
         tripID: tripID,
-        orderBy: orderBy
+        orderBy: orderBy,
+        orderPrecedence: orderPrecedence
       }
     );
 
