@@ -38,7 +38,7 @@ export const getAllPOIsPagination = async (req, res) => {
 
 export const getPOIsByTrip = async (req, res) => getResourcesByTripID(req, res, {
   resourceName: 'points_of_interest',
-  orderBy: 'name',
+  orderBy: 'visit_time',
   orderPrecedence: 'asc'
 });
 

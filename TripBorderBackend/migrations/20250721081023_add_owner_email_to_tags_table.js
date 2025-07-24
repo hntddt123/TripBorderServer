@@ -12,7 +12,7 @@ exports.up = function addOwnerEmail(knex) {
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = function dropaddOwnerEmail(knex) {
+exports.down = function dropOwnerEmail(knex) {
   return knex.schema.table('tags', (table) => {
     table.dropColumn('owner_email');
   });

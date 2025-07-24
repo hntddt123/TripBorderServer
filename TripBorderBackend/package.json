@@ -30,7 +30,7 @@
     "body-parser": "^2.2.0",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
+    "dotenv": "^17.2.0",
     "envalid": "^8.0.0",
     "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
