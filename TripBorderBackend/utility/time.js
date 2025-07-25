@@ -1,3 +1,3 @@
 import { DateTime } from 'luxon';
 
-export const newDateyyyyMMdd = () => DateTime.now().toFormat('yyyy-MM-dd');
+export const DefaultyyyyMMdd = () => DateTime.local().toFormat('yyyy-MM-dd');

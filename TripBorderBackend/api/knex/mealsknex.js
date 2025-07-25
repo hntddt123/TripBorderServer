@@ -16,6 +16,14 @@ export const createMealsByTripIDDB = async (meals) => knexDBInstance('meals')
   }).returning('*')
   .then((rows) => rows[0]);
 
+export const updateMealsByIDDB = async (uuid, updateData) => {
+  const updatedRows = await knexDBInstance('meals')
+    .where('uuid', uuid)
+    .update(updateData);
+
+  return updatedRows;
+};
+
 export const deleteMealsByIDDB = async (mealID) => {
   const count = await knexDBInstance('meals')
     .where('uuid', mealID)

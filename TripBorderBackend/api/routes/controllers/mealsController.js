@@ -4,6 +4,7 @@ import { getTableTotalCountDB } from '../../knex/utilityknex';
 import {
   getMealsPaginationDB,
   createMealsByTripIDDB,
+  updateMealsByIDDB,
   deleteMealsByIDDB
 } from '../../knex/mealsknex';
 import { getResourcesByTripID } from './utility/genericControllerUtility';
@@ -54,6 +55,24 @@ export const createMealsByTrip = async (req, res) => {
   } catch (error) {
     logger.error(`Error Creating Meals by trips_uuid ${error}`);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updateMealsByID = async (req, res) => {
+  const { uuid } = req.params;
+  const updateData = req.body.data;
+
+  try {
+    const updatedRows = await updateMealsByIDDB(uuid, updateData);
+
+    if (updatedRows === 0) {
+      res.status(404).json({ error: 'Meals not found' });
+    } else {
+      res.json({ message: 'Meals Updated!' });
+    }
+  } catch (error) {
+    logger.error(`Error in updating Meals: ${error}`);
+    res.status(500).send({ error: 'Failed to update Meals' });
   }
 };
 
