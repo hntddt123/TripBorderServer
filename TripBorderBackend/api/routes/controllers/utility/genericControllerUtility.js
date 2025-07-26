@@ -8,7 +8,7 @@ import {
   getPaginationOffset
 } from './paginationUtility';
 
-export const getResourcesByEmailPagination = async (req, res, { resourceName }) => {
+export const getResourcesByEmailPagination = async (req, res, { resourceName, orderBy, orderPrecedence }) => {
   try {
     const { email, page, limit } = req.body;
     const offset = getPaginationOffset(page, limit);
@@ -26,7 +26,9 @@ export const getResourcesByEmailPagination = async (req, res, { resourceName }) 
       {
         ownerEmail: email,
         limit: limit,
-        offset: offset
+        offset: offset,
+        orderBy: orderBy,
+        orderPrecedence: orderPrecedence
       }
     );
 
@@ -48,7 +50,7 @@ export const getResourcesByEmailPagination = async (req, res, { resourceName }) 
   }
 };
 
-export const getResourcesByTripID = async (req, res, { resourceName, orderBy }) => {
+export const getResourcesByTripID = async (req, res, { resourceName, orderBy, orderPrecedence }) => {
   try {
     const { tripID } = req.body;
 
@@ -56,7 +58,8 @@ export const getResourcesByTripID = async (req, res, { resourceName, orderBy }) 
       resourceName,
       {
         tripID: tripID,
-        orderBy: orderBy
+        orderBy: orderBy,
+        orderPrecedence: orderPrecedence
       }
     );
 

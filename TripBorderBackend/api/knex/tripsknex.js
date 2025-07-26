@@ -1,5 +1,8 @@
 import { knexDBInstance } from './knexDBInstance';
 import logger from '../../setupPino';
+import {
+  DefaultyyyyMMdd
+} from '../../utility/time';
 
 export const getTripsByUUIDDB = async (tripUUID) => knexDBInstance('trips')
   .where({ uuid: tripUUID });
@@ -24,23 +27,25 @@ export const getTripsByEmailPaginationDB = async (ownerEmail, limit, offset) => 
   .offset(offset)
   .orderBy('created_at', 'desc');
 
-export const initTripsDB = async (ownerEmail) => knexDBInstance('trips').insert({
-  uuid: knexDBInstance.fn.uuid(),
-  title: 'New Trip',
-  owner_email: ownerEmail,
-  start_date: null,
-  end_date: null,
-  created_at: knexDBInstance.fn.now(),
-  updated_at: knexDBInstance.fn.now()
-}).returning('*')
+export const initTripsDB = async (ownerEmail) => knexDBInstance('trips')
+  .insert({
+    uuid: knexDBInstance.fn.uuid(),
+    title: 'New Trip',
+    owner_email: ownerEmail,
+    start_date: DefaultyyyyMMdd(),
+    end_date: DefaultyyyyMMdd(),
+    created_at: knexDBInstance.fn.now(),
+    updated_at: knexDBInstance.fn.now()
+  }).returning([
+    'uuid',
+    'title',
+    'owner_email',
+    knexDBInstance.raw("TO_CHAR(start_date, 'YYYY-MM-DD') as start_date"),
+    knexDBInstance.raw("TO_CHAR(end_date, 'YYYY-MM-DD') as end_date"),
+    'created_at',
+    'updated_at',
+  ])
   .then((rows) => rows[0]);
-
-export const deleteTripsDB = async (tripID) => {
-  const count = await knexDBInstance('trips')
-    .where('uuid', tripID)
-    .delete();
-  logger.info(`Deleted ${count} row(s)`);
-};
 
 export const updateTripsDB = async (uuid, updateData) => {
   const updatedRows = await knexDBInstance('trips')
@@ -48,4 +53,11 @@ export const updateTripsDB = async (uuid, updateData) => {
     .update(updateData);
 
   return updatedRows;
+};
+
+export const deleteTripsDB = async (tripID) => {
+  const count = await knexDBInstance('trips')
+    .where('uuid', tripID)
+    .delete();
+  logger.info(`Deleted ${count} row(s) of trip`);
 };

@@ -62,7 +62,7 @@ export const deleteMileagesDB = async (mileageID) => {
   const count = await knexDBInstance('mileages')
     .where('uuid', mileageID)
     .delete();
-  logger.info(`Deleted ${count} row(s)`);
+  logger.info(`Deleted ${count} row(s) of mileage`);
 };
 
 export const updateMileagesDB = async (uuid, updateData) => {

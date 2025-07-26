@@ -1,7 +1,13 @@
 import logger from '../../../setupPino';
 import { getPaginationOffset } from './utility/paginationUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
-import { getTripTagsPaginationDB, getTripTagsbyTripDB } from '../../knex/trip_tagsknex';
+import {
+  getTripTagsPaginationDB,
+  getTripTagsbyTripDB,
+  createTripTagByTripIDAndTagIDDB,
+  deleteTripTagByIDDB,
+  isTripTagDuplicateDB
+} from '../../knex/triptagsknex';
 
 export const getAllTripTagsPagination = async (req, res) => {
   try {
@@ -31,7 +37,7 @@ export const getAllTripTagsPagination = async (req, res) => {
   }
 };
 
-export const getTripTagsByTrip = async (req, res) => {
+export const getTripTagsByTripID = async (req, res) => {
   try {
     const { tripID } = req.body;
     const tripTags = await getTripTagsbyTripDB(tripID);
@@ -40,5 +46,39 @@ export const getTripTagsByTrip = async (req, res) => {
   } catch (error) {
     logger.error(`Error Fetching tripTags ${error}`);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const createTripTagByTripIDAndTagID = async (req, res) => {
+  try {
+    const tripTag = req.body.data;
+
+    const existing = await isTripTagDuplicateDB(tripTag);
+    if (existing) {
+      res.status(409).json({
+        error: 'The triptag already exists'
+      });
+    }
+
+    const newTripTag = await createTripTagByTripIDAndTagIDDB(tripTag);
+
+    res.json({
+      tripTag: newTripTag,
+    });
+  } catch (error) {
+    logger.error(`Error Creating TripTag by trips_uuid ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const deleteTripTagByID = async (req, res) => {
+  const tripTagID = req.body.data;
+
+  try {
+    await deleteTripTagByIDDB(tripTagID);
+    res.json({ message: 'TripTag Removed!' });
+  } catch (error) {
+    logger.error(`Error in removing TripTag: ${error}`);
+    res.status(500).send({ error: 'Failed to remove TripTag' });
   }
 };

@@ -9,12 +9,21 @@ export const getTableTotalCountByEmailDB = async (tableName, { ownerEmail }) => 
   .count('* as total')
   .first();
 
-export const getResourcesByEmailPaginationDB = async (tableName, { ownerEmail, limit, offset }) => knexDBInstance(tableName)
+export const getResourcesByEmailPaginationDB = async (
+  tableName,
+  {
+    ownerEmail,
+    limit,
+    offset,
+    orderBy,
+    orderPrecedence
+  }
+) => knexDBInstance(tableName)
   .where({ owner_email: ownerEmail })
   .limit(limit)
   .offset(offset)
-  .orderBy('created_at', 'desc');
+  .orderBy(orderBy, orderPrecedence);
 
-export const getResourcesByTripIDDB = async (tableName, { tripID, orderBy }) => knexDBInstance(tableName)
+export const getResourcesByTripIDDB = async (tableName, { tripID, orderBy, orderPrecedence }) => knexDBInstance(tableName)
   .where({ trips_uuid: tripID })
-  .orderBy(orderBy, 'desc');
+  .orderBy(orderBy, orderPrecedence);
