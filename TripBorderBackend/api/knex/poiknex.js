@@ -16,6 +16,14 @@ export const createPOIByTripIDDB = async (poi) => knexDBInstance('points_of_inte
   }).returning('*')
   .then((rows) => rows[0]);
 
+export const updatePOIByIDDB = async (uuid, updateData) => {
+  const updatedRows = await knexDBInstance('points_of_interest')
+    .where('uuid', uuid)
+    .update(updateData);
+
+  return updatedRows;
+};
+
 export const deletePOIByIDDB = async (poiID) => {
   const count = await knexDBInstance('points_of_interest')
     .where('uuid', poiID)

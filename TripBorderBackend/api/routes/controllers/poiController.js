@@ -5,6 +5,7 @@ import { getTableTotalCountDB } from '../../knex/utilityknex';
 import {
   getPOIsPaginationDB,
   createPOIByTripIDDB,
+  updatePOIByIDDB,
   deletePOIByIDDB
 } from '../../knex/poiknex';
 
@@ -54,6 +55,24 @@ export const createPOIByTrip = async (req, res) => {
   } catch (error) {
     logger.error(`Error Creating points_of_interest by trips_uuid ${error}`);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updatePOIByID = async (req, res) => {
+  const { uuid } = req.params;
+  const updateData = req.body.data;
+
+  try {
+    const updatedRows = await updatePOIByIDDB(uuid, updateData);
+
+    if (updatedRows === 0) {
+      res.status(404).json({ error: 'POI not found' });
+    } else {
+      res.json({ message: 'POI Updated!' });
+    }
+  } catch (error) {
+    logger.error(`Error in updating POI: ${error}`);
+    res.status(500).send({ error: 'Failed to update POI' });
   }
 };
 
