@@ -6,7 +6,7 @@ export const getHotelsPaginationDB = async (limit, offset) => knexDBInstance('ho
   .offset(offset)
   .orderBy('check_in', 'desc');
 
-export const createHotelsByTripIDDB = async (hotels) => knexDBInstance('hotels')
+export const createHotelByTripIDDB = async (hotels) => knexDBInstance('hotels')
   .insert({
     uuid: knexDBInstance.fn.uuid(),
     trips_uuid: hotels.trips_uuid,
@@ -18,7 +18,15 @@ export const createHotelsByTripIDDB = async (hotels) => knexDBInstance('hotels')
   }).returning('*')
   .then((rows) => rows[0]);
 
-export const deleteHotelsByIDDB = async (hotelID) => {
+export const updateHotelByIDDB = async (uuid, updateData) => {
+  const updatedRows = await knexDBInstance('hotels')
+    .where('uuid', uuid)
+    .update(updateData);
+
+  return updatedRows;
+};
+
+export const deleteHotelByIDDB = async (hotelID) => {
   const count = await knexDBInstance('hotels')
     .where('uuid', hotelID)
     .delete();

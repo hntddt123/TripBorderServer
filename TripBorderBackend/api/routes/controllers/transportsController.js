@@ -5,6 +5,7 @@ import { getTableTotalCountDB } from '../../knex/utilityknex';
 import {
   getTransportsPaginationDB,
   createTransportByTripIDDB,
+  updateTransportByIDDB,
   deleteTransportByIDDB
 } from '../../knex/transportsknex';
 
@@ -54,6 +55,24 @@ export const createTransportByTrip = async (req, res) => {
   } catch (error) {
     logger.error(`Error Creating Transport by trips_uuid ${error}`);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updateTransportByID = async (req, res) => {
+  const { uuid } = req.params;
+  const updateData = req.body.data;
+
+  try {
+    const updatedRows = await updateTransportByIDDB(uuid, updateData);
+
+    if (updatedRows === 0) {
+      res.status(404).json({ error: 'Transport not found' });
+    } else {
+      res.json({ message: 'Transport Updated!' });
+    }
+  } catch (error) {
+    logger.error(`Error in updating Transport: ${error}`);
+    res.status(500).send({ error: 'Failed to update Transport' });
   }
 };
 
