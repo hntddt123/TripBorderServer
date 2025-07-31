@@ -3,8 +3,9 @@ import { getPaginationOffset } from './utility/paginationUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
 import {
   getHotelsPaginationDB,
-  createHotelsByTripIDDB,
-  deleteHotelsByIDDB
+  createHotelByTripIDDB,
+  updateHotelByIDDB,
+  deleteHotelByIDDB
 } from '../../knex/hotelsknex';
 import { getResourcesByTripID } from './utility/genericControllerUtility';
 
@@ -42,29 +43,47 @@ export const getHotelsByTrip = async (req, res) => getResourcesByTripID(req, res
   orderPrecedence: 'asc'
 });
 
-export const createHotelsByTrip = async (req, res) => {
+export const createHotelByTrip = async (req, res) => {
   try {
-    const hotels = req.body.data;
+    const hotel = req.body.data;
 
-    const newHotels = await createHotelsByTripIDDB(hotels);
+    const newHotels = await createHotelByTripIDDB(hotel);
 
     res.json({
       hotels: newHotels,
     });
   } catch (error) {
-    logger.error(`Error Creating Hotels by trips_uuid ${error}`);
+    logger.error(`Error Creating Hotel by trips_uuid ${error}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-export const deleteHotelsByID = async (req, res) => {
+export const updateHotelByID = async (req, res) => {
+  const { uuid } = req.params;
+  const updateData = req.body.data;
+
+  try {
+    const updatedRows = await updateHotelByIDDB(uuid, updateData);
+
+    if (updatedRows === 0) {
+      res.status(404).json({ error: 'Hotel not found' });
+    } else {
+      res.json({ message: 'Hotel Updated!' });
+    }
+  } catch (error) {
+    logger.error(`Error in updating Hotel: ${error}`);
+    res.status(500).send({ error: 'Failed to update Hotel' });
+  }
+};
+
+export const deleteHotelByID = async (req, res) => {
   const hotelID = req.body.data;
 
   try {
-    await deleteHotelsByIDDB(hotelID);
-    res.json({ message: 'Hotels Removed!' });
+    await deleteHotelByIDDB(hotelID);
+    res.json({ message: 'Hotel Removed!' });
   } catch (error) {
-    logger.error(`Error in removing Hotels: ${error}`);
-    res.status(500).send({ error: 'Failed to remove Hotels' });
+    logger.error(`Error in removing Hotel: ${error}`);
+    res.status(500).send({ error: 'Failed to remove Hotel' });
   }
 };

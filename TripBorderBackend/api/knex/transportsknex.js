@@ -22,6 +22,14 @@ export const createTransportByTripIDDB = async (transport) => knexDBInstance('tr
   }).returning('*')
   .then((rows) => rows[0]);
 
+export const updateTransportByIDDB = async (uuid, updateData) => {
+  const updatedRows = await knexDBInstance('transports')
+    .where('uuid', uuid)
+    .update(updateData);
+
+  return updatedRows;
+};
+
 export const deleteTransportByIDDB = async (transportID) => {
   const count = await knexDBInstance('transports')
     .where('uuid', transportID)

@@ -87,7 +87,7 @@ export const redirect = (req, res) => {
 export const getAuthstatus = (req, res) => {
   if (req.user) {
     res.json({
-      isLoggedIn: true,
+      isAuthenticated: true,
       uuid: req.user.uuid,
       email: req.user.email,
       provider: req.user.provider,
@@ -100,7 +100,7 @@ export const getAuthstatus = (req, res) => {
     });
   } else {
     res.json({
-      isLoggedIn: false
+      isAuthenticated: false
     });
   }
 };
