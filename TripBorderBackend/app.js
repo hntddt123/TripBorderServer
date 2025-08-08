@@ -31,6 +31,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const allowedOrigins = process.env.FRONTEND_ORIGIN.split(',');
 
+app.set('trust proxy', 1);
 app.use(httpLogger);
 app.use(helmet());
 app.use(cors({
@@ -49,7 +50,7 @@ const httpsServer = https.createServer(options, app);
 app.use('/api', apiRouter);
 
 app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000, // 15 m`inutes
   max: 100, // Limit to 100 requests per window
   message: 'Too many requests from this IP, please try again later.'
 }));

@@ -19,6 +19,21 @@ secrets:
     file: ./secrets/tunnel_token.txt
 
 services:
+  nominatim:
+    image: mediagis/nominatim:5.1  # Pulls pre-built Nominatim with osm2pgsql/PostgreSQL (stable version; avoids manual builds).
+    volumes:
+      - ${HOME}/nominatim-data/postgresql:/var/lib/postgresql/14/main  # Persists DB data (~500GB+ for planet; maps host path to container for durability).
+      - ${HOME}/nominatim-data/flatnode:/nominatim/flatnode  # Flatnode storage for efficient import (reduces RAM needs during osm2pgsql load).
+      - ${HOME}/nominatim-data/share:/nominatim/share  # Hosts PBF file (e.g., download planet-latest.osm.pbf here externally via wget).
+    environment:
+      - PBF_PATH=/nominatim/share/planet-latest.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
+      - THREADS=16  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
+      - REPLICATION_URL=https://planet.openstreetmap.org/replication/day/  # Enables future updates via daily diffs (avoids full re-imports).
+      - NOMINATIM_PASSWORD=securepass123  # DB password (example: change to strong value; used for PostgreSQL access).
+      - IMPORT_STYLE=admin  # Minimal import style (faster, lower resources; use 'extratags' for more data if needed).
+    networks:
+      - backend-network  # Joins existing network (allows proxy_pass by service name, e.g., http://nominatim:8080).
+
   server:
     build: .
     expose:
