@@ -12,6 +12,7 @@ import tripTagsRouter from './Routes/tripTagsRouter';
 import ratingsRouter from './Routes/ratingsRouter';
 
 const apiRouter = Router();
+
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/users', usersRouter);
 apiRouter.use('/mileages', mileagesRouter);

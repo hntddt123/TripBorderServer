@@ -83,6 +83,8 @@ services:
     depends_on:
       - server
 
+  # Run if permission denied for external drive
+  # dot_clean -m /Volumes/SSDName/nominatim-data
   nominatim:
     image: mediagis/nominatim:5.1  # Pulls pre-built Nominatim with osm2pgsql/PostgreSQL (stable version; avoids manual builds).
     volumes:
@@ -90,12 +92,18 @@ services:
       - ${HOME}/nominatim-data/flatnode:/nominatim/flatnode  # Flatnode storage for efficient import (reduces RAM needs during osm2pgsql load).
       - ${HOME}/nominatim-data/share:/nominatim/share  # Hosts PBF file (e.g., download planet-latest.osm.pbf here externally via wget).
     environment:
-      - PBF_PATH=/nominatim/share/japan-latest.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
+      - PBF_PATH=/nominatim/share/taiwan-latest.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
       - THREADS=10  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
-      - REPLICATION_URL=https://download.geofabrik.de/asia/japan-updates/  # Enables future updates via daily diffs (avoids full re-imports).
-      - IMPORT_STYLE=admin  # Minimal import style (faster, lower resources; use 'extratags' for more data if needed).
+      - REPLICATION_URL=https://download.geofabrik.de/asia/taiwan-updates/  # Enables future updates via daily diffs (avoids full re-imports).
+      - IMPORT_STYLE=extratags # Minimal import style (faster, lower resources; use 'extratags' for more data if needed).
+        # admin: Only import administrative boundaries and places.
+        # street: Like the admin style but also adds streets.
+        # address: Import all data necessary to compute addresses down to house number level.
+        # full: Default style that also includes points of interest.
+        # extratags: Like the full style but also adds most of the OSM tags into the extratags column.
+      - IMPORT_WIKIPEDIA=false
     entrypoint:
-      - /bin/sh  # Shell binary (lightweight, standard in Ubuntu-based images like this one).
+      - /bin/sh  #Arg 1: Shell binary
       - -c  # Arg 2: Flag to treat next arg as a command string (prevents direct arg parsing).
       - export NOMINATIM_PASSWORD=$(cat /run/secrets/nominatim_password) && exec /app/start.sh  # Arg 3: Command string to execute.
     secrets:

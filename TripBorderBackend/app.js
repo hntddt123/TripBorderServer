@@ -5,8 +5,8 @@ import helmet from 'helmet';
 import https from 'https';
 import fs from 'fs';
 import cors from 'cors';
-import apiRouter from './api/routes/api';
 import logger, { httpLogger } from './setupPino';
+import apiRouter from './api/routes/api';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
@@ -66,5 +66,8 @@ app.get('/easteregg', (req, res) => {
 });
 
 httpsServer.listen(serverPort, () => {
-  logger.info(`Trip Border ${process.env.VERSION} ${process.env.NODE_ENV} server listening at ${process.env.BACKEND_ORIGIN}:${serverPort}`);
+  logger.info(
+    `Trip Border ${process.env.VERSION} ${process.env.NODE_ENV} server 
+    listening at ${process.env.BACKEND_ORIGIN}:${serverPort}`
+  );
 });
