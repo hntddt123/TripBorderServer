@@ -83,7 +83,7 @@ services:
     depends_on:
       - server
 
-  # Run if permission denied for external drive
+  # Run below command if permission denied for external drive
   # dot_clean -m /Volumes/SSDName/nominatim-data
   nominatim:
     image: mediagis/nominatim:5.1  # Pulls pre-built Nominatim with osm2pgsql/PostgreSQL (stable version; avoids manual builds).
@@ -91,10 +91,10 @@ services:
       - ${HOME}/nominatim-data/postgresql:/var/lib/postgresql/14/main  # Persists DB data (~500GB+ for planet; maps host path to container for durability).
       - ${HOME}/nominatim-data/flatnode:/nominatim/flatnode  # Flatnode storage for efficient import (reduces RAM needs during osm2pgsql load).
       - ${HOME}/nominatim-data/share:/nominatim/share  # Hosts PBF file (e.g., download planet-latest.osm.pbf here externally via wget).
+    shm_size: '4g'
     environment:
-      - PBF_PATH=/nominatim/share/taiwan-latest.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
+      - PBF_PATH=/nominatim/share/TW-JP-US-regions.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
       - THREADS=10  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
-      - REPLICATION_URL=https://download.geofabrik.de/asia/taiwan-updates/  # Enables future updates via daily diffs (avoids full re-imports).
       - IMPORT_STYLE=extratags # Minimal import style (faster, lower resources; use 'extratags' for more data if needed).
         # admin: Only import administrative boundaries and places.
         # street: Like the admin style but also adds streets.

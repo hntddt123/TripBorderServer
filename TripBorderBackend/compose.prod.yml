@@ -80,5 +80,36 @@ services:
     depends_on:
       - serverprod
 
+# Run below command if permission denied for external drive
+  # dot_clean -m /Volumes/SSDName/nominatim-data
+  nominatim:
+    image: mediagis/nominatim:5.1  # Pulls pre-built Nominatim with osm2pgsql/PostgreSQL (stable version; avoids manual builds).
+    volumes:
+      - ${HOME}/nominatim-data/postgresql:/var/lib/postgresql/16/main  # Persists DB data (~500GB+ for planet; maps host path to container for durability).
+      - ${HOME}/nominatim-data/flatnode:/nominatim/flatnode  # Flatnode storage for efficient import (reduces RAM needs during osm2pgsql load).
+      - ${HOME}/nominatim-data/share:/nominatim/share  # Hosts PBF file (e.g., download planet-latest.osm.pbf here externally via wget).
+    shm_size: '4g'
+    environment:
+      - PBF_PATH=/nominatim/share/TW-JP-US-regions.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
+      - THREADS=10  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
+      - IMPORT_STYLE=extratags # Minimal import style (faster, lower resources; use 'extratags' for more data if needed).
+        # admin: Only import administrative boundaries and places.
+        # street: Like the admin style but also adds streets.
+        # address: Import all data necessary to compute addresses down to house number level.
+        # full: Default style that also includes points of interest.
+        # extratags: Like the full style but also adds most of the OSM tags into the extratags column.
+      - IMPORT_WIKIPEDIA=false
+    entrypoint:
+      - /bin/sh  #Arg 1: Shell binary
+      - -c  # Arg 2: Flag to treat next arg as a command string (prevents direct arg parsing).
+      - export NOMINATIM_PASSWORD=$(cat /run/secrets/nominatim_password) && exec /app/start.sh  # Arg 3: Command string to execute.
+    secrets:
+      - nominatim_password
+    networks:
+      - backend-network  # Joins existing network (allows proxy_pass by service name, e.g., http://nominatim:8080).
+    depends_on:
+      - server
+      - db
+
 volumes:
   postgres_data_prod: # Define the named volume here
