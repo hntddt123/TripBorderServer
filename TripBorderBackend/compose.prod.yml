@@ -13,6 +13,8 @@ networks:
     external: true
 
 secrets:
+  nominatim_password:
+    file: ./secrets/nominatim_password.txt
   db_password:
     file: ./secrets/db_password.txt
   tunnel_token:
@@ -82,7 +84,7 @@ services:
 
 # Run below command if permission denied for external drive
   # dot_clean -m /Volumes/SSDName/nominatim-data
-  nominatim:
+  nominatimprod:
     image: mediagis/nominatim:5.1  # Pulls pre-built Nominatim with osm2pgsql/PostgreSQL (stable version; avoids manual builds).
     volumes:
       - ${HOME}/nominatim-data/postgresql:/var/lib/postgresql/16/main  # Persists DB data (~500GB+ for planet; maps host path to container for durability).
@@ -108,8 +110,8 @@ services:
     networks:
       - backend-network  # Joins existing network (allows proxy_pass by service name, e.g., http://nominatim:8080).
     depends_on:
-      - server
-      - db
+      - serverprod
+      - dbprod
 
 volumes:
   postgres_data_prod: # Define the named volume here
