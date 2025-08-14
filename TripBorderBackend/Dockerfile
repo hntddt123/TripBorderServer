@@ -24,10 +24,6 @@ RUN npm i
 # Copy the rest of the application code
 COPY . .
 
-# Copy SSL files and set permissions
-COPY ./ssl /ssl
-RUN chmod -R 600 /ssl/*
-
 # Run the application.
 CMD ["npm", "run", "server"]
 
