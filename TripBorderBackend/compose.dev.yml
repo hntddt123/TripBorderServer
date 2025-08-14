@@ -91,7 +91,7 @@ services:
       - ${HOME}/nominatim-data/postgresql:/var/lib/postgresql/14/main  # Persists DB data (~500GB+ for planet; maps host path to container for durability).
       - ${HOME}/nominatim-data/flatnode:/nominatim/flatnode  # Flatnode storage for efficient import (reduces RAM needs during osm2pgsql load).
       - ${HOME}/nominatim-data/share:/nominatim/share  # Hosts PBF file (e.g., download planet-latest.osm.pbf here externally via wget).
-    shm_size: '4g'
+    shm_size: '16g'
     environment:
       - PBF_PATH=/nominatim/share/TW-JP-US-regions.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
       - THREADS=10  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
