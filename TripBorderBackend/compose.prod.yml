@@ -87,13 +87,16 @@ services:
   nominatimprod:
     image: mediagis/nominatim:5.1  # Pulls pre-built Nominatim with osm2pgsql/PostgreSQL (stable version; avoids manual builds).
     volumes:
-      - ${HOME}/nominatim-data/postgresql:/var/lib/postgresql/16/main  # Persists DB data (~500GB+ for planet; maps host path to container for durability).
-      - ${HOME}/nominatim-data/flatnode:/nominatim/flatnode  # Flatnode storage for efficient import (reduces RAM needs during osm2pgsql load).
-      - ${HOME}/nominatim-data/share:/nominatim/share  # Hosts PBF file (e.g., download planet-latest.osm.pbf here externally via wget).
+      - nominatim-pg-data:/var/lib/postgresql/16/main  # Persists DB data (~500GB+ for planet; maps host path to container for durability).
+      - nominatim-flatnode:/nominatim/flatnode  # Flatnode storage for efficient import (reduces RAM needs during osm2pgsql load).
+      - nominatim-share:/nominatim/share  # Hosts PBF file (e.g., download planet-latest.osm.pbf here externally via wget).
+      - ${HOME}/nominatim-data-backup/share:/nominatim/share
     shm_size: '16g'
+    mem_limit: '16g'
+    cpus: 8
     environment:
       - PBF_PATH=/nominatim/share/TW-JP-US-regions.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
-      - THREADS=10  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
+      - THREADS=8  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
       - IMPORT_STYLE=extratags # Minimal import style (faster, lower resources; use 'extratags' for more data if needed).
         # admin: Only import administrative boundaries and places.
         # street: Like the admin style but also adds streets.
