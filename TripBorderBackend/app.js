@@ -12,6 +12,7 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
 const app = express();
 const serverPort = process.env.PORT;
+const allowedOrigins = process.env.FRONTEND_ORIGIN.split(',');
 
 if (process.env.NODE_ENV === 'development') {
   logger.info('Environment Variable');
@@ -25,11 +26,10 @@ if (process.env.NODE_ENV === 'development') {
     DB_USER: process.env.DB_USER,
     DB_NAME: process.env.DB_NAME,
     SSL_KEY_PATH: process.env.SSL_KEY_PATH,
-    SSL_CERT_PATH: process.env.SSL_CERT_PATH
+    SSL_CERT_PATH: process.env.SSL_CERT_PATH,
+    allowedOrigins: allowedOrigins
   });
 }
-
-const allowedOrigins = process.env.FRONTEND_ORIGIN.split(',');
 
 app.set('trust proxy', 1);
 app.use(httpLogger);
