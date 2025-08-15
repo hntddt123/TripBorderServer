@@ -6,8 +6,10 @@
   "main": "app.js",
   "scripts": {
     "server": "babel-node app.js",
-    "docker": "COMPOSE_BAKE=true docker compose -f compose.dev.yml up --build",
-    "dockerprod": "COMPOSE_BAKE=true docker compose -f compose.prod.yml up --build ",
+    "docker": "COMPOSE_BAKE=true docker compose -f compose.dev.yml up --build --detach",
+    "dockerprod": "COMPOSE_BAKE=true docker compose -f compose.prod.yml up --build --detach",
+    "dockerlog": "docker compose -f compose.dev.yml logs -f",
+    "dockerprodlog": "docker compose -f compose.prod.yml logs -f",
     "prune": "docker image prune",
     "test": "jest",
     "test:coverage": "jest --coverage",
