@@ -22,6 +22,7 @@ secrets:
 
 services:
   serverprod:
+    command: sh -c "npx knex migrate:latest && npm run server" # migrate to latest database schema
     build: .
     expose:
     - "7777"
@@ -36,7 +37,6 @@ services:
       SSL_PRIVATE_KEY_PATH: /ssl/tripborderbackend-key.pem
     env_file:
       - .env.production
-    command: sh -c "npx knex migrate:latest && npm run server" # migrate to latest database schema
     secrets:
       - db_password
     networks:

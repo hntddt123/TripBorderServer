@@ -22,6 +22,8 @@ secrets:
 
 services:
   server:
+    # migrate to latest database schema and seed file
+    command: sh -c "npx knex migrate:latest && npx knex seed:run --knexfile knexfile.js && npm run server" 
     build: .
     expose:
     - "7776"
@@ -36,12 +38,15 @@ services:
       SSL_PRIVATE_KEY_PATH: /ssl/tripborderbackend-key.pem
     env_file:
       - .env.development
-    # migrate to latest database schema and seed file
-    command: sh -c "npx knex migrate:latest && npx knex seed:run --knexfile knexfile.js && npm run server" 
     secrets:
       - db_password
     networks:
       - backend-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       db:
         condition: service_healthy
@@ -58,6 +63,11 @@ services:
       - postgres_data_dev:/var/lib/postgresql/data
     networks:
       - backend-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "nientaiho", "-d", "tripborderdevdb"]
       interval: 5s
@@ -114,6 +124,11 @@ services:
       - nominatim_password
     networks:
       - backend-network  # Joins existing network (allows proxy_pass by service name, e.g., http://nominatim:8080).
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       - server
       - db
