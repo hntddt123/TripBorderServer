@@ -52,7 +52,6 @@ export const updateUser = async (req, res) => {
   const { uuid } = req.params;
   const updates = req.body.data;
 
-  logger.debug(updates);
   try {
     const updatedRows = await updateUserDB(uuid, updates);
     if (updatedRows === 0) {

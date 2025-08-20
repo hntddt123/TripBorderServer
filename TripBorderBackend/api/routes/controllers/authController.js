@@ -108,7 +108,6 @@ export const setJWTToken = (req, res, next) => {
 };
 
 export const getAuthStatus = (req, res) => {
-  logger.debug(req.user);
   if (req.user) {
     res.json({
       isAuthenticated: true,
