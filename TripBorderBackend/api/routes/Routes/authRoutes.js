@@ -2,19 +2,17 @@ import { Router } from 'express';
 import passport from 'passport';
 import {
   googleStrategy,
+  jwtStrategy,
+  getAuthStatus,
+  setJWTToken,
   redirect,
-  setupSession,
-  getAuthstatus,
   logout
 } from '../controllers/authController';
+import logger from '../../../setupPino';
 
 const authRouter = Router();
 
-authRouter.use(setupSession());
-
-// Middleware for routes
-authRouter.use(passport.initialize());
-authRouter.use(passport.session());
+passport.use(jwtStrategy());
 
 /**
  * Configures Google OAuth strategy for Passport.js.
@@ -24,8 +22,6 @@ authRouter.use(passport.session());
  * @param {function} callback - Passport callback
  */
 passport.use(googleStrategy());
-passport.serializeUser((user, done) => { done(null, user); });
-passport.deserializeUser((obj, done) => { done(null, obj); });
 
 // Routes for Google authentication
 authRouter.get(
@@ -35,11 +31,20 @@ authRouter.get(
 
 authRouter.get(
   '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/api/auth/login' }),
+  passport.authenticate('google', { failureRedirect: '/api/auth/google', session: false }),
+  setJWTToken,
   redirect
 );
 
-authRouter.get('/', getAuthstatus);
+const optionalAuth = (req, res, next) => {
+  passport.authenticate('jwt', { session: false }, (err, user) => {
+    if (err) return next(err);
+    req.user = user || null; // Attach user if valid, else null
+    return next(); // Always continue
+  })(req, res, next);
+};
+
+authRouter.get('/', optionalAuth, getAuthStatus);
 authRouter.get('/logout', logout);
 
 export default authRouter;

@@ -12,3 +12,7 @@ export const getUsersPaginationDB = async (limit, offset) => knexDBInstance('use
   .limit(limit)
   .offset(offset)
   .orderBy('created_at', 'desc');
+
+export const getUserByUUIDDB = async (uuid) => knexDBInstance('user_accounts')
+  .where('uuid', uuid)
+  .first();

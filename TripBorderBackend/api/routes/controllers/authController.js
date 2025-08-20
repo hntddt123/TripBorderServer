@@ -1,65 +1,57 @@
-import session from 'express-session';
-import connectPgSimple from 'connect-pg-simple';
-import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import { cleanEnv, str, url } from 'envalid';
-import fs from 'fs';
-import pg from 'pg';
-import ms from 'ms';
+import { Strategy, ExtractJwt } from 'passport-jwt';
 import GoogleStrategy from 'passport-google-oauth20';
-import { upsertUserOnGoogleLoginDB } from '../../knex/authknex';
+import { loadUserDB, upsertUserOnGoogleLoginDB } from '../../knex/authknex';
 
 import logger from '../../../setupPino';
 
 const env = cleanEnv(process.env, {
   GOOGLE_CLIENT_ID: str(),
   GOOGLE_CLIENT_SECRET: str(),
-  SESSION_SECRET: str({ default: crypto.randomBytes(32).toString('hex') }),
+  JWT_SECRET: str(),
   DB_HOST: str(),
   DB_USER: str(),
   DB_NAME: str(),
   FRONTEND_ORIGIN: url(),
 });
 
-const SessionStore = connectPgSimple(session);
+const {
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  FRONTEND_ORIGIN,
+  JWT_SECRET
+} = env;
 
-const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = env;
-const { DB_HOST, DB_USER, DB_NAME } = env;
-const { SESSION_SECRET } = env;
-const { FRONTEND_ORIGIN } = env;
+const jwtOptions = {
+  jwtFromRequest: ExtractJwt.fromExtractors([
+    (req) => (req.cookies ? req.cookies.jwt : null) // Custom extractor for cookie
+  ]),
+  secretOrKey: JWT_SECRET,
+  issuer: FRONTEND_ORIGIN,
+  audience: FRONTEND_ORIGIN
+};
 
-let DB_PASSWORD = '';
-
-try {
-  DB_PASSWORD = fs.readFileSync('/run/secrets/db_password', 'utf8').trim();
-} catch (error) {
-  logger.error(`Failed to read DB password: ${error}`);
-  process.exit(1);
-}
-
-const pgPool = new pg.Pool({
-  host: DB_HOST,
-  user: DB_USER,
-  password: DB_PASSWORD,
-  database: DB_NAME,
-  port: 5432,
-  max: 20, // Max connections
-  idleTimeoutMillis: 30000, // Close idle connections after 30s
-  connectionTimeoutMillis: 2000 // Timeout for new connections
-});
-
-export const setupSession = () => session({
-  store: new SessionStore({
-    pool: pgPool,
-    tableName: 'session'
-  }),
-  secret: SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: true,
-    httpOnly: true,
-    maxAge: ms('1 year'),
-    sameSite: 'strict'
+/**
+ * payload format {
+ * sub: 'uuid for user'
+ * role: 'user, premium_user, admin'
+ * iss: domain
+ * aud: domain
+ * iat: issue at
+ * exp: expiration at
+ * }
+ */
+export const jwtStrategy = () => new Strategy(jwtOptions, async (payload, done) => {
+  try {
+    // Assuming user lookup from DB (e.g., via Knex/PostgreSQL from previous context)
+    const user = await loadUserDB(payload.sub);
+    if (user) {
+      return done(null, user);
+    }
+    return done(null, false);
+  } catch (error) {
+    return done(error, false);
   }
 });
 
@@ -81,10 +73,42 @@ export const googleStrategy = () => new GoogleStrategy(
 );
 
 export const redirect = (req, res) => {
-  res.redirect(`${FRONTEND_ORIGIN.split(',')[0]}/?auth=success`);
+  res.redirect(`${FRONTEND_ORIGIN}/?auth=success`);
 };
 
-export const getAuthstatus = (req, res) => {
+export const setJWTToken = (req, res, next) => {
+  // Sign JWT on successful Google auth (Issue token after verification)
+  try {
+    const payload = {
+      sub: req.user.uuid,
+      role: req.user.role,
+      iss: FRONTEND_ORIGIN,
+      aud: FRONTEND_ORIGIN
+    }; // Customize with needed claims
+    const token = jwt.sign(
+      payload,
+      JWT_SECRET,
+      { algorithm: 'HS512', expiresIn: '1h' }, // Short expiration best practice
+    );
+
+    res.cookie('jwt', token, {
+      httpOnly: true, // Prevents JS access
+      secure: true,
+      sameSite: 'strict', // Mitigates CSRF
+      maxAge: 60 * 60 * 1000, // 1h in ms
+      path: '/' // Available site-wide
+    });
+
+    next();
+  } catch (error) {
+    // Optional: Log/handle error
+    logger.error('Token generation error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getAuthStatus = (req, res) => {
+  logger.debug(req.user);
   if (req.user) {
     res.json({
       isAuthenticated: true,
@@ -93,10 +117,12 @@ export const getAuthstatus = (req, res) => {
       provider: req.user.provider,
       provider_user_id: req.user.provider_user_id,
       name: req.user.name,
-      profilePicture: req.user.profile_picture,
-      createdAt: req.user.created_at,
-      updatedAt: req.user.updated_at,
-      role: req.user.role
+      profile_picture: req.user.profile_picture,
+      created_at: req.user.created_at,
+      updated_at: req.user.updated_at,
+      role: req.user.role,
+      trial_started_at: req.user.trial_started_at,
+      is_trialed: req.user.is_trialed
     });
   } else {
     res.json({
@@ -106,13 +132,6 @@ export const getAuthstatus = (req, res) => {
 };
 
 export const logout = (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      logger.error(err);
-      res.status(500).send('An error occurred while logging out');
-    } else {
-      res.clearCookie('connect.sid');
-      res.json({ success: true });
-    }
-  });
+  res.clearCookie('jwt', { path: '/' });
+  res.json({ message: 'Logged out successfully' });
 };

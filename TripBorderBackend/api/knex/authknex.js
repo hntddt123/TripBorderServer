@@ -1,6 +1,6 @@
 import { knexDBInstance } from './knexDBInstance';
 
-export async function upsertUserOnGoogleLoginDB(profile) {
+export async function upsertUserOnGoogleLoginDB(profile, accessToken, refreshToken) {
   let user = await knexDBInstance('user_accounts')
     .where({ provider_user_id: profile.id })
     .first();
@@ -12,7 +12,7 @@ export async function upsertUserOnGoogleLoginDB(profile) {
       email: profile.emails[0].value,
       name: profile.displayName,
       profile_picture: profile.photos[0].value,
-      role: 'user'
+      role: 'user',
       // If storing tokens (securely)
       // access_token: accessToken,
       // refresh_token: refreshToken,
@@ -34,4 +34,8 @@ export async function upsertUserOnGoogleLoginDB(profile) {
     user.role = 'admin';
   }
   return user;
+}
+
+export async function loadUserDB(sub) {
+  return knexDBInstance('user_accounts').where('uuid', sub).first();
 }

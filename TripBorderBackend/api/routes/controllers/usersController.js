@@ -1,6 +1,7 @@
 import logger from '../../../setupPino';
 import { getPaginationOffset } from './utility/paginationUtility';
 import {
+  getUserByUUIDDB,
   getUsersPaginationDB,
   getUsersTotalCountDB,
   updateUserDB
@@ -34,16 +35,26 @@ export const getAllUsersPagination = async (req, res) => {
   }
 };
 
+export const getUserByUUID = async (req, res) => {
+  try {
+    const uuid = req.body.data;
+
+    const user = await getUserByUUIDDB(uuid);
+
+    res.json(user);
+  } catch (error) {
+    logger.error(`Error Fetching user by UUID ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const updateUser = async (req, res) => {
   const { uuid } = req.params;
   const updates = req.body.data;
 
-  const updateData = {};
-  if (updates.role !== undefined) updateData.role = updates.role;
-
+  logger.debug(updates);
   try {
-    const updatedRows = await updateUserDB(uuid, updateData);
-
+    const updatedRows = await updateUserDB(uuid, updates);
     if (updatedRows === 0) {
       res.status(404).json({ error: 'User not found' });
     } else {

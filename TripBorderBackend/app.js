@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import https from 'https';
 import fs from 'fs';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import logger, { httpLogger } from './setupPino';
 import apiRouter from './api/routes/api';
 
@@ -39,6 +40,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
 
 const options = {
   key: fs.readFileSync(process.env.SSL_KEY_PATH),
