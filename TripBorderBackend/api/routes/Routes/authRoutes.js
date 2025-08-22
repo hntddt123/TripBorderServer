@@ -5,10 +5,10 @@ import {
   jwtStrategy,
   getAuthStatus,
   setJWTToken,
+  optionalAuth,
   redirect,
   logout
 } from '../controllers/authController';
-import logger from '../../../setupPino';
 
 const authRouter = Router();
 
@@ -35,14 +35,6 @@ authRouter.get(
   setJWTToken,
   redirect
 );
-
-const optionalAuth = (req, res, next) => {
-  passport.authenticate('jwt', { session: false }, (err, user) => {
-    if (err) return next(err);
-    req.user = user || null; // Attach user if valid, else null
-    return next(); // Always continue
-  })(req, res, next);
-};
 
 authRouter.get('/', optionalAuth, getAuthStatus);
 authRouter.get('/logout', logout);
