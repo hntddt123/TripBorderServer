@@ -43,8 +43,8 @@ const jwtOptions = {
     (req) => (req.cookies ? req.cookies.jwtAccess : null) // Custom extractor for cookie
   ]),
   secretOrKey: JWT_ACCESS_SECRET,
-  issuer: FRONTEND_ORIGIN,
-  audience: FRONTEND_ORIGIN
+  issuer: FRONTEND_ORIGIN.split(',')[0],
+  audience: FRONTEND_ORIGIN.split(',')[0]
 };
 
 /**
@@ -88,7 +88,7 @@ export const googleStrategy = () => new GoogleStrategy(
 );
 
 export const redirect = (req, res) => {
-  res.redirect(`${FRONTEND_ORIGIN}/?auth=success`);
+  res.redirect(`${FRONTEND_ORIGIN.split(',')[0]}/?auth=success`);
 };
 
 export const setJWTToken = (req, res, next) => {
@@ -97,8 +97,8 @@ export const setJWTToken = (req, res, next) => {
     const payload = {
       sub: req.user.uuid,
       role: req.user.role,
-      iss: FRONTEND_ORIGIN,
-      aud: FRONTEND_ORIGIN
+      iss: FRONTEND_ORIGIN.split(',')[0],
+      aud: FRONTEND_ORIGIN.split(',')[0]
     }; // Customize with needed claims
     const token = tokenService.generateAccessToken(payload);
     const refreshToken = tokenService.generateRefreshToken(payload);

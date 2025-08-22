@@ -90,7 +90,7 @@ services:
       - nominatim-pg-data:/var/lib/postgresql/16/main  # Persists DB data (~500GB+ for planet; maps host path to container for durability).
       - nominatim-flatnode:/nominatim/flatnode  # Flatnode storage for efficient import (reduces RAM needs during osm2pgsql load).
       - nominatim-share:/nominatim/share  # Hosts PBF file (e.g., download planet-latest.osm.pbf here externally via wget).
-      - ${HOME}/nominatim-data-backup/share:/nominatim/share
+      - ${HOME}/nominatim-data/share:/nominatim/share
     shm_size: '16g'
     mem_limit: '16g'
     cpus: 8
@@ -117,4 +117,7 @@ services:
       - dbprod
 
 volumes:
+  nominatim-pg-data:  # nominatim PostgreSQL
+  nominatim-flatnode:  # nominatim flatnode
+  nominatim-share:     # nominatim share
   postgres_data_prod: # Define the named volume here

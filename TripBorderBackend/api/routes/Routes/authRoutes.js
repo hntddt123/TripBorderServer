@@ -31,7 +31,7 @@ authRouter.get(
 
 authRouter.get(
   '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/api/auth/google', session: false }),
+  passport.authenticate('google', { failureRedirect: '/', session: false }),
   setJWTToken,
   redirect
 );
