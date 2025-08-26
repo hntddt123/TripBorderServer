@@ -1,7 +1,7 @@
 import logger from '../../../setupPino';
 import { getPaginationOffset } from './utility/paginationUtility';
 import {
-  getUserByUUIDDB,
+  getUserByEmailDB,
   getUsersPaginationDB,
   getUsersTotalCountDB,
   updateUserDB
@@ -35,15 +35,20 @@ export const getAllUsersPagination = async (req, res) => {
   }
 };
 
-export const getUserByUUID = async (req, res) => {
+export const getUserByEmail = async (req, res) => {
   try {
-    const uuid = req.body.data;
+    let email = req.body.data;
+    email = email.trim().toLowerCase();
 
-    const user = await getUserByUUIDDB(uuid);
+    if (!email.includes('@')) {
+      email = `${email}@gmail.com`;
+    }
+
+    const user = await getUserByEmailDB(email);
 
     res.json(user);
   } catch (error) {
-    logger.error(`Error Fetching user by UUID ${error}`);
+    logger.error(`Error Fetching user by Email ${error}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
