@@ -12,7 +12,8 @@ export const createMealsByTripIDDB = async (meals) => knexDBInstance('meals')
     trips_uuid: meals.trips_uuid,
     name: meals.name,
     address: meals.address,
-    meal_time: meals.meal_time
+    meal_time: meals.meal_time,
+    location: knexDBInstance.raw('POINT(?, ?)', [meals.location.longitude, meals.location.latitude])
   }).returning('*')
   .then((rows) => rows[0]);
 

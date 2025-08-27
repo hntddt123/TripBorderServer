@@ -14,7 +14,8 @@ export const createHotelByTripIDDB = async (hotels) => knexDBInstance('hotels')
     address: hotels.address,
     check_in: hotels.check_in,
     check_out: hotels.check_out,
-    booking_reference: hotels.booking_reference
+    booking_reference: hotels.booking_reference,
+    location: knexDBInstance.raw('POINT(?, ?)', [hotels.location.longitude, hotels.location.latitude])
   }).returning('*')
   .then((rows) => rows[0]);
 

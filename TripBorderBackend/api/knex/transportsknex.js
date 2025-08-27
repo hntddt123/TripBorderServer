@@ -18,7 +18,8 @@ export const createTransportByTripIDDB = async (transport) => knexDBInstance('tr
     departure_time: transport.departure_time,
     arrival_time: transport.arrival_time,
     origin: transport.origin,
-    destination: transport.destination
+    destination: transport.destination,
+    location: knexDBInstance.raw('POINT(?, ?)', [transport.location.longitude, transport.location.latitude])
   }).returning('*')
   .then((rows) => rows[0]);
 

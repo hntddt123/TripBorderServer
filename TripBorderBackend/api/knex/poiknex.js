@@ -12,7 +12,8 @@ export const createPOIByTripIDDB = async (poi) => knexDBInstance('points_of_inte
     trips_uuid: poi.trips_uuid,
     name: poi.name,
     address: poi.address,
-    visit_time: poi.visit_time
+    visit_time: poi.visit_time,
+    location: knexDBInstance.raw('POINT(?, ?)', [poi.location.longitude, poi.location.latitude])
   }).returning('*')
   .then((rows) => rows[0]);
 

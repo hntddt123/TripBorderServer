@@ -46,7 +46,6 @@ export const getHotelsByTrip = async (req, res) => getResourcesByTripID(req, res
 export const createHotelByTrip = async (req, res) => {
   try {
     const hotel = req.body.data;
-
     const newHotels = await createHotelByTripIDDB(hotel);
 
     res.json({

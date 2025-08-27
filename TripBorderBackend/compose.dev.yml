@@ -24,6 +24,7 @@ services:
   server:
     # migrate to latest database schema and seed file
     command: sh -c "npx knex migrate:latest && npx knex seed:run --knexfile knexfile.js && npm run server" 
+    # restart: unless-stopped
     build: .
     expose:
     - "7776"
@@ -53,6 +54,7 @@ services:
 
   db:
     image: postgres:latest
+    # restart: unless-stopped
     environment:
       POSTGRES_USER: nientaiho
       POSTGRES_DB: tripborderdevdb
@@ -76,6 +78,7 @@ services:
 
   nginx:
     image: nginx:alpine
+    # restart: unless-stopped
     ports: 
       - "80:80"
       - "443:443"
