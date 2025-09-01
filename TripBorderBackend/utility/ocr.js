@@ -10,7 +10,7 @@ const isBufferHeic = (imageBuffer) => {
     const brand = imageBuffer.subarray(8, 12).toString('hex');
     if (ftypBox === '66747970' && ['68656963', '6d696631', '6d736631'].includes(brand)) {
       isHeic = true;
-      logger.debug(`Detected HEIC image, brand:${brand}`);
+      logger.info(`Detected HEIC image, brand:${brand}`);
     }
   }
   return isHeic;
@@ -25,7 +25,7 @@ export const ocrMatchFrequentFlyerNumber = async (ffn, mileagePic) => {
     imageBuffer = await convert({ buffer: imageBuffer, format: 'PNG', quality: '0.9' });
   }
   const { data: { text } } = await Tesseract.recognize(imageBuffer, 'eng');
-  logger.debug(`OCR Result Text: ${text}`);
+  logger.info(`OCR Result Text: ${text}`);
 
   const regex = new RegExp(`\\b${ffn}\\b`);
   return Boolean(text.match(regex));
