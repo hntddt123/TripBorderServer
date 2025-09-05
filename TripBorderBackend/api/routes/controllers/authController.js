@@ -192,7 +192,9 @@ export const getAuthStatus = (req, res) => {
     });
   } else {
     res.json({
-      isAuthenticated: false
+      isAuthenticated: false,
+      message: 'Auth failed',
+      status: 401
     });
   }
 };
