@@ -53,7 +53,7 @@ services:
         condition: service_healthy
 
   db:
-    image: postgres:latest
+    image: postgres:17
     # restart: unless-stopped
     environment:
       POSTGRES_USER: nientaiho
