@@ -1,7 +1,7 @@
 {
   "name": "trip-border-server",
   "author": "Nien-Tai Ho <nientaiho@gmail.com>",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "trip border server backend and postgres database",
   "main": "app.js",
   "scripts": {
