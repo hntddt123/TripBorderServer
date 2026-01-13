@@ -99,7 +99,7 @@ services:
   # Run below command if permission denied for external drive
   # dot_clean -m /Volumes/SSDName/nominatim-data
   nominatim:
-    image: mediagis/nominatim:5.1  # Pulls pre-built Nominatim with osm2pgsql/PostgreSQL (stable version; avoids manual builds).
+    image: mediagis/nominatim:5.2  # Pulls pre-built Nominatim with osm2pgsql/PostgreSQL (stable version; avoids manual builds).
     volumes:
       - nominatim-pg-data:/var/lib/postgresql/16/main  # Persists DB data (~500GB+ for planet; maps host path to container for durability).
       - nominatim-flatnode:/nominatim/flatnode  # Flatnode storage for efficient import (reduces RAM needs during osm2pgsql load).
