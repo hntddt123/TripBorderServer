@@ -147,8 +147,8 @@ export const optionalAuth = (req, res, next) => {
       }
 
       try {
-        const refreshedUser = tokenService.verifyRefreshToken(jwtRefresh); // Verify refresh; throws if invalid/expired
-        const newAccessToken = tokenService.generateAccessToken(refreshedUser); // Generate new access with same payload
+        const refreshedToken = tokenService.verifyRefreshToken(jwtRefresh); // Verify refresh; throws if invalid/expired
+        const newAccessToken = tokenService.generateAccessToken(refreshedToken); // Generate new access with same payload
         res.cookie(
           'jwtAccess',
           newAccessToken,
@@ -159,7 +159,6 @@ export const optionalAuth = (req, res, next) => {
             maxAge: ACCESS_EXP
           }
         ); // Set new cookie (1h ms)
-        req.user = refreshedUser; // Attach refreshed user
         return next();
       } catch (refreshErr) {
         logger.error(refreshErr);
