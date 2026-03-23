@@ -6,9 +6,21 @@ import https from 'https';
 import fs from 'fs';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import client from 'prom-client';
 import logger, { httpLogger } from './setupPino';
 import apiRouter from './api/routes/api';
 
+// Create a Registry to store metrics
+const register = new client.Registry();
+client.collectDefaultMetrics({ register }); // auto-collects CPU, memory, event loop, etc.
+
+// Custom metrics example (optional but useful)
+const httpRequestsTotal = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status'],
+  registers: [register]
+});
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
 const app = express();
@@ -60,6 +72,16 @@ app.use(rateLimit({
 app.use((err, req, res, next) => {
   logger.error('Unexpected error:', err.message, err.stack);
   res.status(500).json({ message: `Internal server error: ${err.message}` });
+});
+
+app.get('/', (req, res) => {
+  httpRequestsTotal.inc({ method: 'GET', route: '/', status: '200' });
+  res.send('TripBorder Backend is running!');
+});
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
 });
 
 app.get('/easteregg', (req, res) => {
