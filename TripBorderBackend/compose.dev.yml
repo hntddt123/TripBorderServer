@@ -140,14 +140,17 @@ services:
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus-web.yml:/etc/prometheus/prometheus-web.yml
+      - ./ssl/prometheus:/etc/prometheus/certs
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+      - '--web.config.file=/etc/prometheus/prometheus-web.yml'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
       - '--web.enable-lifecycle'   # allows reload without restart
-      - '--web.external-url=http://localhost'
+      - '--web.external-url=https://localhost'
     ports:
       - "9090:9090"
     restart: unless-stopped
@@ -156,11 +159,15 @@ services:
     container_name: grafana
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./ssl/grafana:/etc/grafana/certs:ro
     ports:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=dev   # Change this!
-      - GF_SERVER_ROOT_URL=http://localhost/grafana
+      - GF_SERVER_PROTOCOL=https
+      - GF_SERVER_CERT_FILE=/etc/grafana/certs/grafana.crt
+      - GF_SERVER_CERT_KEY=/etc/grafana/certs/grafana.key
+      - GF_SERVER_ROOT_URL=https://localhost/grafana
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     restart: unless-stopped
   node-exporter:   # bonus: monitors your Mac's CPU/RAM/disk
