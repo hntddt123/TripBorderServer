@@ -11,7 +11,7 @@ scrape_configs:
       - targets: ['node-exporter:9100']
 
   - job_name: 'tripborder-backend' 
-    scheme: https         # ← YOUR APP
+    scheme: https         # ← Trip Border Backend App
     metrics_path: '/metrics'
     static_configs:
       - targets: ['host.docker.internal']   # ← CHANGE PORT if needed
