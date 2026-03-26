@@ -151,8 +151,9 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
       - '--web.enable-lifecycle'   # allows reload without restart
       - '--web.external-url=https://localhost'
+      - '--web.listen-address=0.0.0.0:9998'
     ports:
-      - "9090:9090"
+      - "9998:9998"
     restart: unless-stopped
   grafana:
     image: grafana/grafana:latest
@@ -161,7 +162,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./ssl/grafana:/etc/grafana/certs:ro
     ports:
-      - "3000:3000"
+      - "9999:9999"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=dev   # Change this!
       - GF_SERVER_PROTOCOL=https
@@ -169,6 +170,7 @@ services:
       - GF_SERVER_CERT_KEY=/etc/grafana/certs/grafana.key
       - GF_SERVER_ROOT_URL=https://localhost/grafana
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SERVER_HTTP_PORT=9999
     restart: unless-stopped
   node-exporter:   # bonus: monitors your Mac's CPU/RAM/disk
     image: prom/node-exporter:latest
