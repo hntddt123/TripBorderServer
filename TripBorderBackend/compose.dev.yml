@@ -19,7 +19,8 @@ secrets:
     file: ./secrets/db_password.txt
   tunnel_token:
     file: ./secrets/tunnel_token.txt
-
+  grafana_admin_password:
+    file: ./secrets/grafana_admin_password.txt
 services:
   server:
     # migrate to latest database schema and seed file
@@ -135,9 +136,57 @@ services:
     depends_on:
       - server
       - db
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus-web.yml:/etc/prometheus/prometheus-web.yml
+      - ./ssl/prometheus:/etc/prometheus/certs
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.config.file=/etc/prometheus/prometheus-web.yml'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'   # allows reload without restart
+      - '--web.external-url=https://localhost'
+      - '--web.listen-address=0.0.0.0:9998'
+    ports:
+      - "9998:9998"
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./ssl/grafana:/etc/grafana/certs:ro
+    ports:
+      - "9999:9999"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana_admin_password
+      - GF_SERVER_PROTOCOL=https
+      - GF_SERVER_CERT_FILE=/etc/grafana/certs/grafana.crt
+      - GF_SERVER_CERT_KEY=/etc/grafana/certs/grafana.key
+      - GF_SERVER_ROOT_URL=https://localhost:9999/grafana/
+      - GF_SERVER_HTTP_PORT=9999
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    secrets:
+      - grafana_admin_password
+    restart: unless-stopped
+  node-exporter:   # bonus: monitors your Mac's CPU/RAM/disk
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
 
 volumes:
   nominatim-pg-data:  # nominatim PostgreSQL
   nominatim-flatnode:  # nominatim flatnode
   nominatim-share:     # nominatim share
   postgres_data_dev: # TripBorder PostgreSQL
+  prometheus_data:
+  grafana_data:

@@ -7,6 +7,7 @@ import fs from 'fs';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import logger, { httpLogger } from './setupPino';
+import { register, httpRequestMiddleware } from './api/middlewares/httpRequestMiddleware';
 import apiRouter from './api/routes/api';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
@@ -41,6 +42,28 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 m`inutes
+  max: 100, // Limit to 100 requests per window
+  message: 'Too many requests from this IP, please try again later.'
+}));
+
+app.use('/api', httpRequestMiddleware, apiRouter);
+
+app.use((err, req, res, next) => {
+  logger.error('Unexpected error:', err.message, err.stack);
+  res.status(500).json({ message: `Internal server error: ${err.message}` });
+});
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
+app.get('/easteregg', (req, res) => {
+  logger.info('Found an egg');
+  res.send('Found an egg on your trip!');
+});
 
 const options = {
   key: fs.readFileSync(process.env.SSL_KEY_PATH),
@@ -48,24 +71,6 @@ const options = {
 };
 
 const httpsServer = https.createServer(options, app);
-
-app.use('/api', apiRouter);
-
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 m`inutes
-  max: 100, // Limit to 100 requests per window
-  message: 'Too many requests from this IP, please try again later.'
-}));
-
-app.use((err, req, res, next) => {
-  logger.error('Unexpected error:', err.message, err.stack);
-  res.status(500).json({ message: `Internal server error: ${err.message}` });
-});
-
-app.get('/easteregg', (req, res) => {
-  logger.info('Found an egg');
-  res.send('Found an egg on your trip!');
-});
 
 httpsServer.listen(serverPort, () => {
   logger.info(
