@@ -170,9 +170,9 @@ services:
       - GF_SERVER_PROTOCOL=https
       - GF_SERVER_CERT_FILE=/etc/grafana/certs/grafana.crt
       - GF_SERVER_CERT_KEY=/etc/grafana/certs/grafana.key
-      - GF_SERVER_ROOT_URL=https://localhost/grafana
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SERVER_ROOT_URL=https://localhost:9999/grafana/
       - GF_SERVER_HTTP_PORT=9999
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     secrets:
       - grafana_admin_password
     restart: unless-stopped
