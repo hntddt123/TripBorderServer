@@ -25,7 +25,6 @@ services:
   server:
     # migrate to latest database schema and seed file
     command: sh -c "npx knex migrate:latest && npx knex seed:run --knexfile knexfile.js && npm run server" 
-    # restart: unless-stopped
     build: .
     expose:
     - "7776"
@@ -52,10 +51,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
 
   db:
     image: postgres:17
-    # restart: unless-stopped
     environment:
       POSTGRES_USER: nientaiho
       POSTGRES_DB: tripborderdevdb
@@ -76,10 +75,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   nginx:
     image: nginx:alpine
-    # restart: unless-stopped
     ports: 
       - "80:80"
       - "443:443"
@@ -96,6 +95,7 @@ services:
         max-file: "3"
     depends_on:
       - server
+    restart: unless-stopped
 
   # Run below command if permission denied for external drive
   # dot_clean -m /Volumes/SSDName/nominatim-data
@@ -109,7 +109,6 @@ services:
     shm_size: '16g'
     mem_limit: '16g'
     cpus: 8
-    # restart: unless-stopped
     environment:
       - PBF_PATH=/nominatim/share/TW-JP-US-regions.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
       - THREADS=8  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
@@ -136,6 +135,8 @@ services:
     depends_on:
       - server
       - db
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
