@@ -45,6 +45,7 @@ services:
     depends_on:
       dbprod:
         condition: service_healthy
+    restart: unless-stopped
 
   dbprod:
     image: postgres:latest
@@ -63,6 +64,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   nginxprod:
     image: nginx:alpine
@@ -82,6 +84,7 @@ services:
         max-file: "3"
     depends_on:
       - serverprod
+    restart: unless-stopped
 
 # Run below command if permission denied for external drive
   # dot_clean -m /Volumes/SSDName/nominatim-data
@@ -116,6 +119,8 @@ services:
     depends_on:
       - serverprod
       - dbprod
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -136,6 +141,7 @@ services:
     ports:
       - "9998:9998"
     restart: unless-stopped
+
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -162,6 +168,7 @@ services:
     ports:
       - "9100:9100"
     restart: unless-stopped
+
 volumes:
   nominatim-pg-data:  # nominatim PostgreSQL
   nominatim-flatnode:  # nominatim flatnode
