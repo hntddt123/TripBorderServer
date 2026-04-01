@@ -61,8 +61,8 @@ app.get('/metrics', async (req, res) => {
 });
 
 app.get('/easteregg', (req, res) => {
-  logger.info('Found an egg');
-  res.send('Found an egg on your trip!');
+  logger.info('Easter egg triggered');
+  res.send('Trip rip ip :p!');
 });
 
 const options = {

@@ -1,7 +1,13 @@
 # Trip Border Server
-Express and PostgresSql server for TripBorder database
-Handles useraccounts, mileages, session
-
+Dockerized backend
+Postgres (SQL database) -- see migrations folder for schemas
+Express (Server)
+ngrok (Prototyping cloud reverse proxy）
+CloudFlare Tunnel (Development & Production with domain)
+Nominatim server (Open Street Map data)
+Prometheus (Metrics)
+Grafana (Metrics)
+nginx (Reverse proxy)
 
 ## Available Scripts
 
