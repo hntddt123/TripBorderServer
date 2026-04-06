@@ -10,7 +10,7 @@
 networks:
   backend-network:
     name: tripborder-backend-network
-    external: true
+    driver: bridge
 
 secrets:
   nominatim_password:
