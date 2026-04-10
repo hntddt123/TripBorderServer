@@ -6,6 +6,7 @@
   "main": "app.js",
   "scripts": {
     "server": "babel-node app.js",
+    "dockerstage": "docker compose -f compose.staging.yml up --build",
     "docker": "docker compose -f compose.dev.yml up --build",
     "dockerprod": "docker compose -f compose.prod.yml up --build --detach",
     "dockerlog": "docker compose -f compose.dev.yml logs -f",
