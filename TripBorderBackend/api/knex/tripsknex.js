@@ -11,7 +11,18 @@ export const getTripsTotalCountDB = async () => knexDBInstance('trips')
   .count('* as total')
   .first();
 
+export const getTripsPublicTotalCountDB = async () => knexDBInstance('trips')
+  .where({ shared_mode: 'public' })
+  .count('* as total')
+  .first();
+
 export const getTripsPaginationDB = async (limit, offset) => knexDBInstance('trips')
+  .limit(limit)
+  .offset(offset)
+  .orderBy('created_at', 'desc');
+
+export const getTripsPublicPaginationDB = async (limit, offset) => knexDBInstance('trips')
+  .where({ shared_mode: 'public' })
   .limit(limit)
   .offset(offset)
   .orderBy('created_at', 'desc');
@@ -36,7 +47,6 @@ export const initTripsDB = async (ownerEmail) => knexDBInstance('trips')
     end_date: DefaultyyyyMMdd(),
     created_at: knexDBInstance.fn.now(),
     updated_at: knexDBInstance.fn.now(),
-    shared_email: '',
     shared_mode: 'private'
   }).returning([
     'uuid',
@@ -46,7 +56,6 @@ export const initTripsDB = async (ownerEmail) => knexDBInstance('trips')
     knexDBInstance.raw("TO_CHAR(end_date, 'YYYY-MM-DD') as end_date"),
     'created_at',
     'updated_at',
-    'shared_email',
     'shared_mode'
   ])
   .then((rows) => rows[0]);

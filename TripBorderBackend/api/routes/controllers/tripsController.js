@@ -3,7 +3,9 @@ import { getPaginationOffset } from './utility/paginationUtility';
 import { getResourcesByEmailPagination } from './utility/genericControllerUtility';
 import {
   getTripsTotalCountDB,
+  getTripsPublicTotalCountDB,
   getTripsPaginationDB,
+  getTripsPublicPaginationDB,
   getTripsByUUIDDB,
   initTripsDB,
   updateTripsDB,
@@ -19,6 +21,34 @@ export const getAllTripsPagination = async (req, res) => {
     const total = parseInt(totalResult.total, 10);
 
     const trips = await getTripsPaginationDB(limit, offset);
+
+    const totalPages = Math.ceil(total / limit);
+
+    if (page > totalPages && total > 0) {
+      res.status(400).json({ error: 'Invalid page number' });
+    }
+
+    res.json({
+      trips,
+      total,
+      totalPages,
+      page
+    });
+  } catch (error) {
+    logger.error(`Error Fetching trips ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getTripsPublicPagination = async (req, res) => {
+  try {
+    const { page, limit } = req.query;
+    const offset = getPaginationOffset(page, limit);
+
+    const totalResult = await getTripsPublicTotalCountDB();
+    const total = parseInt(totalResult.total, 10);
+
+    const trips = await getTripsPublicPaginationDB(limit, offset);
 
     const totalPages = Math.ceil(total / limit);
 
