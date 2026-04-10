@@ -16,6 +16,5 @@ exports.up = function addTrialFields(knex) {
 exports.down = function dropTrialFields(knex) {
   return knex.schema.table('user_accounts', (table) => {
     table.dropColumn('trial_started_at');
-    table.dropColumn('trial_started_at');
   });
 };

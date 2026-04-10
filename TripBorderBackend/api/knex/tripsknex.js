@@ -35,7 +35,9 @@ export const initTripsDB = async (ownerEmail) => knexDBInstance('trips')
     start_date: DefaultyyyyMMdd(),
     end_date: DefaultyyyyMMdd(),
     created_at: knexDBInstance.fn.now(),
-    updated_at: knexDBInstance.fn.now()
+    updated_at: knexDBInstance.fn.now(),
+    shared_email: '',
+    shared_mode: 'private'
   }).returning([
     'uuid',
     'title',
@@ -44,6 +46,8 @@ export const initTripsDB = async (ownerEmail) => knexDBInstance('trips')
     knexDBInstance.raw("TO_CHAR(end_date, 'YYYY-MM-DD') as end_date"),
     'created_at',
     'updated_at',
+    'shared_email',
+    'shared_mode'
   ])
   .then((rows) => rows[0]);
 
