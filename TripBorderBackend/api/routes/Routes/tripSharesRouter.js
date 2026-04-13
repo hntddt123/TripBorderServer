@@ -10,7 +10,7 @@ import {
 const tripSharesRouter = Router();
 
 tripSharesRouter.get('/', getAllTripSharesPagination);
-tripSharesRouter.post('/tripSharesbytrip', getTripSharesByTrip);
+tripSharesRouter.post('/tripsharesbytrip', getTripSharesByTrip);
 tripSharesRouter.post('/upload', createTripSharesByTrip);
 tripSharesRouter.patch('/update/:uuid', updateTripSharesByID);
 tripSharesRouter.delete('/removebyid', deleteTripSharesByID);
