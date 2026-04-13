@@ -10,7 +10,7 @@ export const createTripSharesByTripIDDB = async (tripShares) => knexDBInstance('
   .insert({
     uuid: knexDBInstance.fn.uuid(),
     trips_uuid: tripShares.trips_uuid,
-    shared_emails: tripShares.shared_emails,
+    shared_email: tripShares.shared_email,
     shared_at: knexDBInstance.fn.now(),
     created_at: knexDBInstance.fn.now(),
     updated_at: knexDBInstance.fn.now()
