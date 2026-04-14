@@ -86,7 +86,7 @@ export const getTripSharesExample = (knex, tripsUUID) => [
   {
     uuid: '550e8400-e29b-41d4-a716-446655440009',
     trips_uuid: tripsUUID,
-    shared_email: 'test2@tripborder.com',
+    shared_email: 'test@tripborder.com',
     shared_at: knex.fn.now(),
     created_at: knex.fn.now(),
     updated_at: knex.fn.now()
@@ -94,7 +94,7 @@ export const getTripSharesExample = (knex, tripsUUID) => [
   {
     uuid: '550e8400-e29b-41d4-a716-446655440010',
     trips_uuid: tripsUUID,
-    shared_email: 'test3@tripborder.com',
+    shared_email: 'test2@tripborder.com',
     shared_at: knex.fn.now(),
     created_at: knex.fn.now(),
     updated_at: knex.fn.now()

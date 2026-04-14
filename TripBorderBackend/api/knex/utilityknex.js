@@ -9,6 +9,11 @@ export const getTableTotalCountByEmailDB = async (tableName, { ownerEmail }) => 
   .count('* as total')
   .first();
 
+export const getTableTotalCountBySharedEmailDB = async (tableName, { sharedEmail }) => knexDBInstance(tableName)
+  .where({ shared_email: sharedEmail })
+  .count('* as total')
+  .first();
+
 export const getResourcesByEmailPaginationDB = async (
   tableName,
   {

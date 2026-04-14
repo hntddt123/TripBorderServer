@@ -17,14 +17,24 @@ exports.up = async function addSharedEmail(knex) {
     table.timestamp('shared_at').defaultTo(knex.fn.now());
     table.timestamps(true, true);
 
-    table
-      .foreign('trips_uuid')
+    table.foreign('shared_email')
+      .references('email')
+      .inTable('user_accounts')
+      .onDelete('CASCADE');
+
+    table.foreign('trips_uuid')
       .references('uuid')
       .inTable('trips')
       .onDelete('CASCADE');
     // Prevent the same email being shared multiple times to the same trip
     table.unique(['trips_uuid', 'shared_email']);
   });
+
+  await knex.raw(`
+    CREATE TRIGGER update_trip_shares_timestamp
+    BEFORE UPDATE ON trip_shares
+    FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
+  `);
 };
 
 /**

@@ -6,10 +6,15 @@ import {
   getTripsPublicTotalCountDB,
   getTripsPaginationDB,
   getTripsPublicPaginationDB,
+  getMySharedTripsWithRecipientsPaginationDB,
+  getMySharedTripsTotalCountDB,
+  getOthersSharedTripsWithRecipientsPaginationDB,
+  getOthersSharedTripsTotalCountDB,
   getTripsByUUIDDB,
   initTripsDB,
   updateTripsDB,
-  deleteTripsDB
+  deleteTripsDB,
+  hasAccessToTripDB
 } from '../../knex/tripsknex';
 
 export const getAllTripsPagination = async (req, res) => {
@@ -67,15 +72,25 @@ export const getTripsPublicPagination = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 export const getTripByUUID = async (req, res) => {
   try {
     const uuid = req.body.data;
+    const userEmail = req.body.email;
+
+    if (!uuid) {
+      res.status(400).json({ error: 'trip uuid is required' });
+    }
+
+    const hasAccess = await hasAccessToTripDB(uuid, userEmail);
+    if (!hasAccess) {
+      res.status(403).json({ error: 'You do not have access to this trip' });
+    }
+
     const trips = await getTripsByUUIDDB(uuid);
 
     res.json({ trips });
   } catch (error) {
-    logger.error(`Error Fetching trips ${error}`);
+    logger.error(`Error fetching trip ${req.body?.data || req.body?.uuid}: ${error}`);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -85,6 +100,75 @@ export const getTripsByEmailPagination = async (req, res) => getResourcesByEmail
   orderBy: 'created_at',
   orderPrecedence: 'desc'
 });
+
+// GET trips shared + array of recipients
+export const getMySharedTripsPagination = async (req, res) => {
+  try {
+    const { email: ownerEmail, page = 1, limit = 10 } = req.body;
+
+    if (!ownerEmail) {
+      res.status(400).json({ error: 'ownerEmail is required' });
+    }
+
+    const offset = getPaginationOffset(page, limit);
+
+    const totalResult = await getMySharedTripsTotalCountDB(ownerEmail);
+    const total = parseInt(totalResult?.total || 0, 10);
+
+    const trips = await getMySharedTripsWithRecipientsPaginationDB(ownerEmail, limit, offset);
+
+    const totalPages = Math.ceil(total / limit);
+
+    if (page > totalPages && total > 0) {
+      res.status(400).json({ error: 'Invalid page number' });
+    }
+
+    res.json({
+      // trip has shared_emails: ["email1", "email2", ...]
+      trips,
+      total,
+      totalPages,
+      page
+    });
+  } catch (error) {
+    logger.error(`Error fetching my shared trips for ${req.body.email}: ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+// GET trips shared + array of recipients
+export const getOthersSharedTripsPagination = async (req, res) => {
+  try {
+    const { email: othersEmail, page = 1, limit = 10 } = req.body;
+
+    if (!othersEmail) {
+      res.status(400).json({ error: 'othersEmail is required' });
+    }
+
+    const offset = getPaginationOffset(page, limit);
+
+    const totalResult = await getOthersSharedTripsTotalCountDB(othersEmail);
+    const total = parseInt(totalResult?.total || 0, 10);
+
+    const trips = await getOthersSharedTripsWithRecipientsPaginationDB(othersEmail, limit, offset);
+
+    const totalPages = Math.ceil(total / limit);
+
+    if (page > totalPages && total > 0) {
+      res.status(400).json({ error: 'Invalid page number' });
+    }
+
+    res.json({
+      // trip has shared_emails: ["email1", "email2", ...]
+      trips,
+      total,
+      totalPages,
+      page
+    });
+  } catch (error) {
+    logger.error(`Error fetching others shared trips for ${req.body.email}: ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 export const initTrips = async (req, res) => {
   const ownerEmail = req.body.data;
