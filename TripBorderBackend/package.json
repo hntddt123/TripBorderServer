@@ -1,13 +1,14 @@
 {
   "name": "trip-border-server",
   "author": "Nien-Tai Ho <nientaiho@gmail.com>",
-  "version": "3.1.1",
+  "version": "3.1.3",
   "description": "trip border server backend and postgres database",
   "main": "app.js",
   "scripts": {
     "server": "babel-node app.js",
-    "docker": "COMPOSE_BAKE=true docker compose -f compose.dev.yml up --build",
-    "dockerprod": "COMPOSE_BAKE=true docker compose -f compose.prod.yml up --build --detach",
+    "dockerstage": "docker compose -f compose.staging.yml up --build",
+    "docker": "docker compose -f compose.dev.yml up --build",
+    "dockerprod": "docker compose -f compose.prod.yml up --build --detach",
     "dockerlog": "docker compose -f compose.dev.yml logs -f",
     "dockerprodlog": "docker compose -f compose.prod.yml logs -f",
     "down": "docker compose -f compose.dev.yml down",

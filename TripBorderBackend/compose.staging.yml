@@ -1,0 +1,77 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+networks:
+  backend-network:
+    name: tripborder-backend-network
+    driver: bridge
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  tunnel_token:
+    file: ./secrets/tunnel_token.txt
+services:
+  server:
+    # migrate to latest database schema and seed file
+    command: sh -c "npx knex migrate:latest && npx knex seed:run --knexfile knexfile.js && npm run server" 
+    build: .
+    expose:
+    - "7776"
+    volumes:
+      - ./ssl:/ssl
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_USER: nientaiho
+      DB_NAME: tripborderdevdb
+      SSL_CERTIFICATE_PATH: /ssl/tripborderbackend-cert.pem
+      SSL_PRIVATE_KEY_PATH: /ssl/tripborderbackend-key.pem
+    env_file:
+      - .env.development
+    secrets:
+      - db_password
+    networks:
+      - backend-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: nientaiho
+      POSTGRES_DB: tripborderdevdb
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "nientaiho", "-d", "tripborderdevdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data_dev: # TripBorder PostgreSQL

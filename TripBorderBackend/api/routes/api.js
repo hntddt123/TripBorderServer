@@ -10,6 +10,7 @@ import transportsRouter from './Routes/transportsRoutes';
 import tagsRouter from './Routes/tagsRoutes';
 import tripTagsRouter from './Routes/tripTagsRouter';
 import ratingsRouter from './Routes/ratingsRouter';
+import tripSharesRouter from './Routes/tripSharesRouter';
 
 const apiRouter = Router();
 
@@ -24,5 +25,6 @@ apiRouter.use('/transports', transportsRouter);
 apiRouter.use('/tags', tagsRouter);
 apiRouter.use('/trip_tags', tripTagsRouter);
 apiRouter.use('/ratings', ratingsRouter);
+apiRouter.use('/trip_shares', tripSharesRouter);
 
 export default apiRouter;

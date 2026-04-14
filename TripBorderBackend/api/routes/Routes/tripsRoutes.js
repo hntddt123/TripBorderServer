@@ -2,6 +2,9 @@ import { Router } from 'express';
 import {
   getAllTripsPagination,
   getTripsByEmailPagination,
+  getMySharedTripsPagination,
+  getOthersSharedTripsPagination,
+  getTripsPublicPagination,
   getTripByUUID,
   initTrips,
   deleteTripsByID,
@@ -11,6 +14,9 @@ import {
 const tripsRouter = Router();
 
 tripsRouter.get('/', getAllTripsPagination);
+tripsRouter.get('/tripspublicpagination', getTripsPublicPagination);
+tripsRouter.post('/tripsmysharedpagination', getMySharedTripsPagination);
+tripsRouter.post('/tripsotherssharedpagination', getOthersSharedTripsPagination);
 tripsRouter.post('/tripsbyemailpagination', getTripsByEmailPagination);
 tripsRouter.post('/tripsbyuuid', getTripByUUID);
 tripsRouter.post('/init', initTrips);
