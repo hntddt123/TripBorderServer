@@ -44,7 +44,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use(rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 100, // Limit to 100 requests per window
+  max: 300, // Limit to 300 requests per window
   message: 'Too many requests from this IP, please try again later.'
 }));
 
