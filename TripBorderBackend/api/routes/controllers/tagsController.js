@@ -38,6 +38,42 @@ export const getAllTagsPagination = async (req, res) => {
   }
 };
 
+export const getAllTagsInfiniteScroll = async (req, res) => {
+  try {
+    const { page, limit } = req.query;
+    const offset = getPaginationOffset(page, limit);
+
+    const totalResult = await getTableTotalCountDB('tags');
+    const total = parseInt(totalResult.total, 10);
+
+    const tags = await getTagsPaginationDB(limit, offset);
+
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
+    const hasMore = page < totalPages;
+
+    if (page > totalPages && total > 0) {
+      res.json({
+        tags: [],
+        total,
+        totalPages,
+        page,
+        hasMore: false
+      });
+    }
+
+    res.json({
+      tags,
+      total,
+      totalPages,
+      page,
+      hasMore
+    });
+  } catch (error) {
+    logger.error(`Error Fetching tags ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const getTagsByEmailPagination = async (req, res) => getResourcesByEmailPagination(req, res, {
   resourceName: 'tags',
   orderBy: 'name',

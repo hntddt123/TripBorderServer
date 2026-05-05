@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   getAllTagsPagination,
+  getAllTagsInfiniteScroll,
   getTagsByEmailPagination,
   createTagByTrip,
   deleteTagByID
@@ -9,6 +10,7 @@ import {
 const tagsRouter = Router();
 
 tagsRouter.get('/', getAllTagsPagination);
+tagsRouter.get('/infinite', getAllTagsInfiniteScroll);
 tagsRouter.post('/tagsbyemailpagination', getTagsByEmailPagination);
 tagsRouter.post('/upload', createTagByTrip);
 tagsRouter.delete('/removebyid', deleteTagByID);
