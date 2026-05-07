@@ -6,7 +6,9 @@ import {
   getTripTagsbyTripDB,
   createTripTagByTripIDAndTagIDDB,
   deleteTripTagByIDDB,
-  isTripTagDuplicateDB
+  isTripTagDuplicateDB,
+  getPublicTripTagsTotalCountDB,
+  getPublicTripTagsPaginationDB
 } from '../../knex/triptagsknex';
 
 export const getAllTripTagsPagination = async (req, res) => {
@@ -30,6 +32,42 @@ export const getAllTripTagsPagination = async (req, res) => {
       total,
       totalPages,
       page
+    });
+  } catch (error) {
+    logger.error(`Error Fetching tripTags ${error}`);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getAllPublicTripTagsInfiniteScroll = async (req, res) => {
+  try {
+    const { page, limit } = req.query;
+    const offset = getPaginationOffset(page, limit);
+
+    const totalResult = await getPublicTripTagsTotalCountDB();
+    const total = parseInt(totalResult.total, 10);
+
+    const tripTags = await getPublicTripTagsPaginationDB(limit, offset);
+
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
+    const hasMore = page < totalPages;
+
+    if (page > totalPages && total > 0) {
+      res.json({
+        tripTags: [],
+        total,
+        totalPages,
+        page,
+        hasMore: false
+      });
+    }
+
+    res.json({
+      tripTags,
+      total,
+      totalPages,
+      page,
+      hasMore
     });
   } catch (error) {
     logger.error(`Error Fetching tripTags ${error}`);

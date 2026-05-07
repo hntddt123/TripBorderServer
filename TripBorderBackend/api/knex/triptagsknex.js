@@ -6,6 +6,25 @@ export const getTripTagsPaginationDB = async (limit, offset) => knexDBInstance('
   .offset(offset)
   .orderBy('trips_uuid', 'desc');
 
+export const getPublicTripTagsPaginationDB = async (limit, offset) => knexDBInstance('trip_tags')
+  .join('trips', 'trip_tags.trips_uuid', '=', 'trips.uuid')
+  .join('tags', 'trip_tags.tags_uuid', '=', 'tags.uuid')
+  .where('trips.shared_mode', 'public')
+  .distinct('trip_tags.tags_uuid')
+  .select('tags.*')
+  .orderBy('tags.name', 'asc')
+  .limit(limit)
+  .offset(offset);
+
+export const getPublicTripTagsTotalCountDB = async () => {
+  const result = await knexDBInstance('trip_tags')
+    .join('trips', 'trip_tags.trips_uuid', '=', 'trips.uuid')
+    .where('trips.shared_mode', 'public')
+    .countDistinct('trip_tags.tags_uuid as total')
+    .first();
+  return result;
+};
+
 export const getTripTagsbyTripDB = async (tripsUUID) => knexDBInstance('trip_tags')
   .select('trip_tags.uuid', 'tags.uuid as tag_uuid', 'tags.name') // Fetch relevant tag fields
   .innerJoin('tags', 'trip_tags.tags_uuid', 'tags.uuid')
