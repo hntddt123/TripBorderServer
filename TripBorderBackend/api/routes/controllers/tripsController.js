@@ -14,7 +14,9 @@ import {
   initTripsDB,
   updateTripsDB,
   deleteTripsDB,
-  hasAccessToTripDB
+  hasAccessToTripDB,
+  getTripsWithTagNamePublicTotalCountDB,
+  getTripsWithTagNamePublicPaginationDB
 } from '../../knex/tripsknex';
 
 export const getAllTripsPagination = async (req, res) => {
@@ -47,13 +49,17 @@ export const getAllTripsPagination = async (req, res) => {
 
 export const getTripsPublicPagination = async (req, res) => {
   try {
-    const { page, limit } = req.query;
+    const { page, limit, tagName } = req.query;
     const offset = getPaginationOffset(page, limit);
 
-    const totalResult = await getTripsPublicTotalCountDB();
+    const totalResult = tagName
+      ? await getTripsWithTagNamePublicTotalCountDB(tagName)
+      : await getTripsPublicTotalCountDB();
     const total = parseInt(totalResult.total, 10);
 
-    const trips = await getTripsPublicPaginationDB(limit, offset);
+    const trips = tagName
+      ? await getTripsWithTagNamePublicPaginationDB(limit, offset, tagName)
+      : await getTripsPublicPaginationDB(limit, offset);
 
     const totalPages = Math.ceil(total / limit);
 
@@ -72,6 +78,7 @@ export const getTripsPublicPagination = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 export const getTripByUUID = async (req, res) => {
   try {
     const uuid = req.body.data;

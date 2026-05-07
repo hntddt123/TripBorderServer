@@ -36,6 +36,14 @@ export const getTripsPublicTotalCountDB = async () => knexDBInstance('trips')
   .count('* as total')
   .first();
 
+export const getTripsWithTagNamePublicTotalCountDB = async (tagName) => knexDBInstance('trips')
+  .where({ shared_mode: 'public' })
+  .join('trip_tags', 'trips.uuid', '=', 'trip_tags.trips_uuid')
+  .join('tags', 'trip_tags.tags_uuid', '=', 'tags.uuid')
+  .where('tags.name', tagName)
+  .countDistinct('trips.uuid as total')
+  .first();
+
 export const getTripsPaginationDB = async (limit, offset) => knexDBInstance('trips')
   .limit(limit)
   .offset(offset)
@@ -43,6 +51,16 @@ export const getTripsPaginationDB = async (limit, offset) => knexDBInstance('tri
 
 export const getTripsPublicPaginationDB = async (limit, offset) => knexDBInstance('trips')
   .where({ shared_mode: 'public' })
+  .limit(limit)
+  .offset(offset)
+  .orderBy('created_at', 'desc');
+
+export const getTripsWithTagNamePublicPaginationDB = async (limit, offset, tagName) => knexDBInstance('trips')
+  .where({ shared_mode: 'public' })
+  .join('trip_tags', 'trips.uuid', '=', 'trip_tags.trips_uuid')
+  .join('tags', 'trip_tags.tags_uuid', '=', 'tags.uuid')
+  .where('tags.name', tagName)
+  .select('trips.*')
   .limit(limit)
   .offset(offset)
   .orderBy('created_at', 'desc');

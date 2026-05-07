@@ -85,7 +85,7 @@ export const getTagsExample = () => [
 
 export const getTripTagsExample = (tripsUUID, tags) => [
   { trips_uuid: tripsUUID, tags_uuid: tags[0].uuid },
-  { trips_uuid: tripsUUID, tags_uuid: tags[1].uuid },
+  { trips_uuid: tripsUUID, tags_uuid: tags[1].uuid }
 ];
 
 export const getRatingsExample = (knex, tripsUUID, hotels) => [
