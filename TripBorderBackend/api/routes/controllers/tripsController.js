@@ -52,14 +52,14 @@ export const getTripsPublicPagination = async (req, res) => {
     const { page, limit, tagName } = req.query;
     const offset = getPaginationOffset(page, limit);
 
-    const totalResult = tagName
-      ? await getTripsWithTagNamePublicTotalCountDB(tagName)
-      : await getTripsPublicTotalCountDB();
+    const totalResult = (tagName === '')
+      ? await getTripsPublicTotalCountDB()
+      : await getTripsWithTagNamePublicTotalCountDB(tagName);
     const total = parseInt(totalResult.total, 10);
 
-    const trips = tagName
-      ? await getTripsWithTagNamePublicPaginationDB(limit, offset, tagName)
-      : await getTripsPublicPaginationDB(limit, offset);
+    const trips = (tagName === '')
+      ? await getTripsPublicPaginationDB(limit, offset)
+      : await getTripsWithTagNamePublicPaginationDB(limit, offset, tagName);
 
     const totalPages = Math.ceil(total / limit);
 
