@@ -1,19 +1,39 @@
 export const getTripsExample = (knex) => [
   {
     uuid: '550e8400-e29b-41d4-a716-446655440001', // Fixed UUID for predictability
-    title: 'Japan Vacation 2025',
+    title: 'Japan Private Vacation 2025',
     owner_email: 'test@tripborder.com',
     start_date: '2025-07-01',
     end_date: '2025-07-07',
     created_at: knex.fn.now(),
     updated_at: knex.fn.now(),
     shared_mode: 'private'
-  }
+  },
+  {
+    uuid: '550e8400-e29b-41d4-a716-446655440009',
+    title: 'Shared Vacation',
+    owner_email: 'test@tripborder.com',
+    start_date: '2025-07-01',
+    end_date: '2025-07-07',
+    created_at: knex.fn.now(),
+    updated_at: knex.fn.now(),
+    shared_mode: 'shared'
+  },
+  {
+    uuid: '550e8400-e29b-41d4-a716-446655440999',
+    title: 'Public Vacation',
+    owner_email: 'test@tripborder.com',
+    start_date: '2025-07-01',
+    end_date: '2025-07-07',
+    created_at: knex.fn.now(),
+    updated_at: knex.fn.now(),
+    shared_mode: 'public'
+  },
 ];
 
 export const getMealsExample = (tripsUUID) => [
   {
-    uuid: '550e8400-e29b-41d4-a716-446655440002', // Fixed UUID for predictability
+    uuid: '550e8400-e29b-41d4-a716-446655440002',
     trips_uuid: tripsUUID,
     name: 'Dinner at Ichiran',
     address: '123 Japan, Japan',
@@ -23,7 +43,7 @@ export const getMealsExample = (tripsUUID) => [
 
 export const getPOIsExample = (tripsUUID) => [
   {
-    uuid: '550e8400-e29b-41d4-a716-446655440003', // Fixed UUID for predictability
+    uuid: '550e8400-e29b-41d4-a716-446655440003',
     trips_uuid: tripsUUID,
     name: 'Skytree',
     address: 'Asakusa, Japan',
@@ -32,7 +52,7 @@ export const getPOIsExample = (tripsUUID) => [
 
 export const getHotelsExample = (tripsUUID) => [
   {
-    uuid: '550e8400-e29b-41d4-a716-446655440004', // Fixed UUID for predictability
+    uuid: '550e8400-e29b-41d4-a716-446655440004',
     trips_uuid: tripsUUID,
     name: 'Hilton Osaka',
     address: '456 Avenue, Osaka',

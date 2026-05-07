@@ -83,7 +83,6 @@ export const getTagsByEmailPagination = async (req, res) => getResourcesByEmailP
 export const createTagByTrip = async (req, res) => {
   try {
     const tag = req.body.data;
-
     const newTag = await createTagByTripIDDB(tag);
 
     res.json({
