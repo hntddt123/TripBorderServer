@@ -1,24 +1,46 @@
-name: Development workflow
+name: Development CI
 
 on:
   push:
-    branches:
-      - dev
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  backend-ci:
+    name: Backend CI
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./TripBorderBackend
     steps:
-      - name: Development Code
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Use Node.js 22.x
-        uses: actions/setup-node@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 22.x
-      - run: npm install
-      - run: npm run lint
-      - run: npm run test
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'TripBorderBackend/package-lock.json'
+
+      - name: Install deps (reproducible CI)
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test (TDD safety net)
+        run: npm run test
+
+      - name: Docker Compose validate (if present in stack)
+        run: |
+          for f in compose*.yml docker-compose*.yml; do
+            if [ -f "$f" ]; then
+              docker compose -f "$f" config --quiet && echo "✅ $f valid" || echo "⚠️ $f issue"
+            fi
+          done
