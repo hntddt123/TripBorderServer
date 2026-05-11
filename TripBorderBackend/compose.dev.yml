@@ -107,8 +107,9 @@ services:
       - nominatim-share:/nominatim/share  # Hosts PBF file (e.g., download planet-latest.osm.pbf here externally via wget).
       - ${HOME}/nominatim-data/share:/nominatim/share
     shm_size: '16g'
-    mem_limit: '16g'
-    cpus: 8
+    mem_limit: '32g'
+    mem_reservation: '16g'
+    cpus: 10
     environment:
       - PBF_PATH=/nominatim/share/TW-JP-US-regions.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
       - THREADS=8  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
