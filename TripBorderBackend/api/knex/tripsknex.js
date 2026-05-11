@@ -47,7 +47,7 @@ export const getTripsWithTagNamePublicTotalCountDB = async (tagName) => knexDBIn
 export const getTripsPaginationDB = async (limit, offset) => knexDBInstance('trips')
   .limit(limit)
   .offset(offset)
-  .orderBy('created_at', 'desc');
+  .orderBy('updated_at', 'desc');
 
 export const getTripsPublicPaginationDB = async (limit, offset) => knexDBInstance('trips')
   .where({ shared_mode: 'public' })
@@ -163,7 +163,7 @@ export const getTripsByEmailPaginationDB = async (ownerEmail, limit, offset) => 
   .where({ owner_email: ownerEmail })
   .limit(limit)
   .offset(offset)
-  .orderBy('created_at', 'desc');
+  .orderBy('updated_at', 'desc');
 
 export const initTripsDB = async (ownerEmail) => knexDBInstance('trips')
   .insert({
