@@ -48,7 +48,7 @@ services:
     restart: unless-stopped
 
   dbprod:
-    image: postgres:latest
+    image: postgres:17-alpine
     environment:
       POSTGRES_USER: nientaiho
       POSTGRES_DB: tripborderdb
