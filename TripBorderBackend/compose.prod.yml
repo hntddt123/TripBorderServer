@@ -100,7 +100,7 @@ services:
     mem_reservation: '16g'
     cpus: 8
     environment:
-      - PBF_PATH=/nominatim/share/TW-JP-US-regions.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
+      - PBF_PATH=/nominatim/share/planet-260608.osm.pbf  # Path to OSM data inside container (example: points to downloaded planet file for full import).
       - THREADS=8  # Parallel threads for import (match your CPU cores; speeds up osm2pgsql processing, e.g., 16 cores halve time).
       - IMPORT_STYLE=extratags # Minimal import style (faster, lower resources; use 'extratags' for more data if needed).
         # admin: Only import administrative boundaries and places.
