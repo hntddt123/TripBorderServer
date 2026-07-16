@@ -158,6 +158,8 @@ services:
     ports:
       - "9998:9998"
     restart: unless-stopped
+    depends_on:
+      - server
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -178,6 +180,9 @@ services:
     secrets:
       - grafana_admin_password
     restart: unless-stopped
+    depends_on:
+      - prometheus
+      - server
   node-exporter:   # bonus: monitors your Mac's CPU/RAM/disk
     image: prom/node-exporter:latest
     container_name: node-exporter
