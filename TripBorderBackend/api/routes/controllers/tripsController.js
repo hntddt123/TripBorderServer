@@ -16,8 +16,10 @@ import {
   deleteTripsDB,
   hasAccessToTripDB,
   getTripsWithTagNamePublicTotalCountDB,
-  getTripsWithTagNamePublicPaginationDB
+  getTripsWithTagNamePublicPaginationDB,
+  getTripsTotalCountByEmailDB
 } from '../../knex/tripsknex';
+import { getUserByEmailDB } from '../../knex/userknex';
 
 export const getAllTripsPagination = async (req, res) => {
   try {
@@ -178,15 +180,20 @@ export const getOthersSharedTripsPagination = async (req, res) => {
 };
 
 export const initTrips = async (req, res) => {
-  const ownerEmail = req.body.data;
+  const { ownerEmail } = req.body.data;
+  const { role } = await getUserByEmailDB(ownerEmail);
 
   try {
-    const trip = await initTripsDB(ownerEmail);
-
-    res.json({
-      trip: trip,
-      message: 'Trip Created!'
-    });
+    const { total } = await getTripsTotalCountByEmailDB(ownerEmail);
+    if (role === 'user' && total > 1) {
+      res.status(403).send({ error: 'Free version only supports 2 trips' });
+    } else if (role === 'premium_user' || role === 'admin' || role === 'user') {
+      const trip = await initTripsDB(ownerEmail);
+      res.json({
+        trip: trip,
+        message: 'Trip Created!'
+      });
+    }
   } catch (error) {
     logger.error(`Error in creating Trip: ${error}`);
     res.status(500).send({ error: 'Failed to create Trip' });

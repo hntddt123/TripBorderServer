@@ -154,8 +154,8 @@ export const getOthersSharedTripsTotalCountDB = async (ownerEmail) => {
   return result;
 };
 
-export const getTripsTotalCountByEmailDB = async (othersEmail) => knexDBInstance('trips')
-  .where({ owner_email: othersEmail })
+export const getTripsTotalCountByEmailDB = async (ownerEmail) => knexDBInstance('trips')
+  .where({ owner_email: ownerEmail })
   .count('* as total')
   .first();
 
