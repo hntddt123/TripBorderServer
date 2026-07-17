@@ -142,7 +142,8 @@ services:
     ports:
       - "9998:9998"
     restart: unless-stopped
-
+    depends_on:
+      - serverprod
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -163,13 +164,16 @@ services:
     secrets:
       - grafana_admin_password
     restart: unless-stopped
+    depends_on:
+      - serverprod
   node-exporter:   # bonus: monitors your Mac's CPU/RAM/disk
     image: prom/node-exporter:latest
     container_name: node-exporter
     ports:
       - "9100:9100"
     restart: unless-stopped
-
+    depends_on:
+      - serverprod
 volumes:
   nominatim-pg-data:  # nominatim PostgreSQL
   nominatim-flatnode:  # nominatim flatnode

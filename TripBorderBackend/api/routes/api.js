@@ -8,9 +8,10 @@ import poisRouter from './Routes/poiRoutes';
 import hotelsRouter from './Routes/hotelsRoutes';
 import transportsRouter from './Routes/transportsRoutes';
 import tagsRouter from './Routes/tagsRoutes';
-import tripTagsRouter from './Routes/tripTagsRouter';
-import ratingsRouter from './Routes/ratingsRouter';
-import tripSharesRouter from './Routes/tripSharesRouter';
+import tripTagsRouter from './Routes/tripTagsRoutes';
+import ratingsRouter from './Routes/ratingsRoutes';
+import tripSharesRouter from './Routes/tripSharesRoutes';
+import stripeRouter from './Routes/stripeRoutes';
 
 const apiRouter = Router();
 
@@ -26,5 +27,6 @@ apiRouter.use('/tags', tagsRouter);
 apiRouter.use('/trip_tags', tripTagsRouter);
 apiRouter.use('/ratings', ratingsRouter);
 apiRouter.use('/trip_shares', tripSharesRouter);
+apiRouter.use('/stripe', stripeRouter);
 
 export default apiRouter;

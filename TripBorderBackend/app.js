@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 import logger, { httpLogger } from './setupPino';
 import { register, httpRequestMiddleware } from './api/middlewares/httpRequestMiddleware';
 import apiRouter from './api/routes/api';
+import { upgradePremiumSubscription } from './api/routes/controllers/stripeController';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
@@ -40,6 +41,11 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true
 }));
+app.post(
+  '/api/stripe/webhook',
+  express.raw({ type: 'application/json' }),
+  upgradePremiumSubscription
+);
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use(rateLimit({

@@ -187,7 +187,11 @@ export const getAuthStatus = (req, res) => {
       updated_at: req.user.updated_at,
       role: req.user.role,
       trial_started_at: req.user.trial_started_at,
-      is_trialed: req.user.is_trialed
+      is_trialed: req.user.is_trialed,
+      premium_started_at: req.user.premium_started_at,
+      stripe_customer_id: req.user.stripe_customer_id,
+      stripe_subscription_id: req.user.stripe_subscription_id,
+      subscription_end_at: req.user.subscription_end_at
     });
   } else {
     res.json({
