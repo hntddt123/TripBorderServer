@@ -189,7 +189,8 @@ services:
     ports:
       - "9100:9100"
     restart: unless-stopped
-
+    depends_on:
+      - server
 volumes:
   nominatim-pg-data:  # nominatim PostgreSQL
   nominatim-flatnode:  # nominatim flatnode
