@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { cleanEnv, str, url } from 'envalid';
+import { cleanEnv, str } from 'envalid';
 import passport from 'passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import GoogleStrategy from 'passport-google-oauth20';
@@ -17,7 +17,9 @@ const env = cleanEnv(process.env, {
   DB_HOST: str(),
   DB_USER: str(),
   DB_NAME: str(),
-  FRONTEND_ORIGIN: url(),
+  // Comma-separated list supported (e.g. https://tripborder.com,https://www.tripborder.com)
+  // Primary (first) origin is used for JWT iss/aud and auth redirect
+  FRONTEND_ORIGIN: str(),
 });
 
 const {
@@ -29,6 +31,9 @@ const {
   ACCESS_EXP,
   REFRESH_EXP
 } = env;
+
+// Canonical frontend origin for JWT claims and redirects
+const primaryFrontendOrigin = FRONTEND_ORIGIN.split(',')[0].trim();
 
 // Token service (DIP: Interface-like, injectable for testing)
 const tokenService = {
@@ -43,8 +48,8 @@ const jwtOptions = {
     (req) => (req.cookies ? req.cookies.jwtAccess : null) // Custom extractor for cookie
   ]),
   secretOrKey: JWT_ACCESS_SECRET,
-  issuer: FRONTEND_ORIGIN.split(',')[0],
-  audience: FRONTEND_ORIGIN.split(',')[0]
+  issuer: primaryFrontendOrigin,
+  audience: primaryFrontendOrigin
 };
 
 /**
@@ -88,7 +93,7 @@ export const googleStrategy = () => new GoogleStrategy(
 );
 
 export const redirect = (req, res) => {
-  res.redirect(`${FRONTEND_ORIGIN.split(',')[0]}/?auth=success`);
+  res.redirect(`${primaryFrontendOrigin}/?auth=success`);
 };
 
 export const setJWTToken = (req, res, next) => {
@@ -97,8 +102,8 @@ export const setJWTToken = (req, res, next) => {
     const payload = {
       sub: req.user.uuid,
       role: req.user.role,
-      iss: FRONTEND_ORIGIN.split(',')[0],
-      aud: FRONTEND_ORIGIN.split(',')[0]
+      iss: primaryFrontendOrigin,
+      aud: primaryFrontendOrigin
     }; // Customize with needed claims
     const token = tokenService.generateAccessToken(payload);
     const refreshToken = tokenService.generateRefreshToken(payload);

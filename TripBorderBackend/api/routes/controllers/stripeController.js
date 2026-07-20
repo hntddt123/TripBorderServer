@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { cleanEnv, str, url } from 'envalid';
+import { cleanEnv, str } from 'envalid';
 import logger from '../../../setupPino';
 import { getUserByEmailDB, updateUserDB } from '../../knex/userknex';
 import { knexDBInstance } from '../../knex/knexDBInstance';
@@ -8,7 +8,9 @@ const env = cleanEnv(process.env, {
   STRIPE_SECRET_KEY: str(),
   STRIPE_PRICE_ID: str(),
   STRIPE_WEBHOOK_SECRET: str(),
-  FRONTEND_ORIGIN: url(),
+  // Comma-separated list supported (e.g. https://tripborder.com,https://www.tripborder.com)
+  // Primary (first) origin is used for Stripe success_url
+  FRONTEND_ORIGIN: str(),
 });
 
 const {
@@ -17,6 +19,9 @@ const {
   STRIPE_WEBHOOK_SECRET,
   FRONTEND_ORIGIN
 } = env;
+
+// Canonical frontend origin for redirects (Stripe only accepts a single URL)
+const primaryFrontendOrigin = FRONTEND_ORIGIN.split(',')[0].trim();
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
@@ -36,7 +41,7 @@ export const createPremiumSubscription = async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${FRONTEND_ORIGIN}?payment=success`,
+      success_url: `${primaryFrontendOrigin}?payment=success`,
       automatic_tax: { enabled: true },
       metadata: { useruuid: uuid },
     });
