@@ -36,7 +36,7 @@ export const createPremiumSubscription = async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${FRONTEND_ORIGIN}?payment=success`,
+      success_url: `${FRONTEND_ORIGIN.split(',')[0]}?payment=success`,
       automatic_tax: { enabled: true },
       metadata: { useruuid: uuid },
     });
