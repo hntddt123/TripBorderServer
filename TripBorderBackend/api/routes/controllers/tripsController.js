@@ -1,6 +1,5 @@
 import logger from '../../../setupPino';
-import { getPaginationOffset } from './utility/paginationUtility';
-import { getResourcesByEmailPagination } from './utility/genericControllerUtility';
+import { isSubscriptionActive } from '../../../utility/time';
 import {
   getTripsTotalCountDB,
   getTripsPublicTotalCountDB,
@@ -20,6 +19,8 @@ import {
   getTripsTotalCountByEmailDB
 } from '../../knex/tripsknex';
 import { getUserByEmailDB } from '../../knex/userknex';
+import { getPaginationOffset } from './utility/paginationUtility';
+import { getResourcesByEmailPagination } from './utility/genericControllerUtility';
 
 export const getAllTripsPagination = async (req, res) => {
   try {
@@ -181,13 +182,23 @@ export const getOthersSharedTripsPagination = async (req, res) => {
 
 export const initTrips = async (req, res) => {
   const { ownerEmail } = req.body.data;
-  const { role } = await getUserByEmailDB(ownerEmail);
+  const { role, subscription_end_at: subscription } = await getUserByEmailDB(ownerEmail);
 
   try {
     const { total } = await getTripsTotalCountByEmailDB(ownerEmail);
+    if (role === 'admin') {
+      const trip = await initTripsDB(ownerEmail);
+      res.json({
+        trip: trip,
+        message: 'Trip Created!'
+      });
+    }
+
     if (role === 'user' && total > 1) {
       res.status(403).send({ error: 'Free version only supports 2 trips' });
-    } else if (role === 'premium_user' || role === 'admin' || role === 'user') {
+    } else if ((!isSubscriptionActive(subscription) && total > 1)) {
+      res.status(403).send({ error: 'Subscription ended Free version only supports 2 trips' });
+    } else if (role === 'premium_user' || role === 'user') {
       const trip = await initTripsDB(ownerEmail);
       res.json({
         trip: trip,
