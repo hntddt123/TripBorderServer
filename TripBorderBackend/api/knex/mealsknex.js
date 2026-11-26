@@ -1,4 +1,5 @@
 import { knexDBInstance } from './knexDBInstance';
+import { pickAllowedFields, UPDATABLE_FIELDS } from '../routes/controllers/utility/fieldUtility';
 import logger from '../../setupPino';
 
 export const getMealsPaginationDB = async (limit, offset) => knexDBInstance('meals')
@@ -20,7 +21,7 @@ export const createMealsByTripIDDB = async (meals) => knexDBInstance('meals')
 export const updateMealsByIDDB = async (uuid, updateData) => {
   const updatedRows = await knexDBInstance('meals')
     .where('uuid', uuid)
-    .update(updateData);
+    .update(pickAllowedFields(updateData, UPDATABLE_FIELDS.meals));
 
   return updatedRows;
 };

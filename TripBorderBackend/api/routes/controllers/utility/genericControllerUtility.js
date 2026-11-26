@@ -4,14 +4,13 @@ import {
   getResourcesByEmailPaginationDB,
   getResourcesByTripIDDB
 } from '../../../knex/utilityknex';
-import {
-  getPaginationOffset
-} from './paginationUtility';
+import { omitFieldsFromRows, parsePagination } from './fieldUtility';
 
 export const getResourcesByEmailPagination = async (req, res, { resourceName, orderBy, orderPrecedence }) => {
   try {
-    const { email, page, limit } = req.body;
-    const offset = getPaginationOffset(page, limit);
+    // Scope to the authenticated caller (requireAuth); ignore req.body.email
+    const { email } = req.user;
+    const { page, limit, offset } = parsePagination(req.body);
 
     const totalResult = await getTableTotalCountByEmailDB(
       resourceName,
@@ -35,10 +34,10 @@ export const getResourcesByEmailPagination = async (req, res, { resourceName, or
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       [resourceName]: resources,
       total,
       totalPages,
@@ -46,13 +45,15 @@ export const getResourcesByEmailPagination = async (req, res, { resourceName, or
     });
   } catch (error) {
     logger.error(`Error Fetching ${resourceName}} by email ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-export const getResourcesByTripID = async (req, res, { resourceName, orderBy, orderPrecedence }) => {
+// Trip access is checked by requireTripReadAccess (req.trip, req.tripAccess).
+// publicOmitFields are stripped when the caller only sees the trip because it is public.
+export const getResourcesByTripID = async (req, res, { resourceName, orderBy, orderPrecedence, publicOmitFields = [] }) => {
   try {
-    const { tripID } = req.body;
+    const tripID = req.trip.uuid;
 
     const resources = await getResourcesByTripIDDB(
       resourceName,
@@ -63,11 +64,15 @@ export const getResourcesByTripID = async (req, res, { resourceName, orderBy, or
       }
     );
 
-    res.json({
-      [resourceName]: resources,
+    const visibleResources = (req.tripAccess === 'public')
+      ? omitFieldsFromRows(resources, publicOmitFields)
+      : resources;
+
+    return res.json({
+      [resourceName]: visibleResources,
     });
   } catch (error) {
     logger.error(`Error Fetching ${resourceName} by trips_uuid ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

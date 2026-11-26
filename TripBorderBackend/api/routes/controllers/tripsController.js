@@ -13,12 +13,17 @@ import {
   initTripsDB,
   updateTripsDB,
   deleteTripsDB,
-  hasAccessToTripDB,
   getTripsWithTagNamePublicTotalCountDB,
   getTripsWithTagNamePublicPaginationDB,
   getTripsTotalCountByEmailDB
 } from '../../knex/tripsknex';
-import { getUserByEmailDB } from '../../knex/userknex';
+import {
+  omitFieldsFromRows,
+  parsePagination,
+  pickAllowedFields,
+  TRIP_SHARED_MODES,
+  UPDATABLE_FIELDS
+} from './utility/fieldUtility';
 import { getPaginationOffset } from './utility/paginationUtility';
 import { getResourcesByEmailPagination } from './utility/genericControllerUtility';
 
@@ -35,10 +40,10 @@ export const getAllTripsPagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       trips,
       total,
       totalPages,
@@ -46,62 +51,57 @@ export const getAllTripsPagination = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching trips ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const getTripsPublicPagination = async (req, res) => {
   try {
-    const { page, limit, tagName } = req.query;
-    const offset = getPaginationOffset(page, limit);
+    const { page, limit, offset } = parsePagination(req.query);
+    const tagName = typeof req.query.tagName === 'string' ? req.query.tagName.trim() : '';
 
     const totalResult = (tagName === '')
       ? await getTripsPublicTotalCountDB()
       : await getTripsWithTagNamePublicTotalCountDB(tagName);
-    const total = parseInt(totalResult.total, 10);
-
-    const trips = (tagName === '')
-      ? await getTripsPublicPaginationDB(limit, offset)
-      : await getTripsWithTagNamePublicPaginationDB(limit, offset, tagName);
+    const total = parseInt(totalResult?.total || 0, 10);
 
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    const rows = (tagName === '')
+      ? await getTripsPublicPaginationDB(limit, offset)
+      : await getTripsWithTagNamePublicPaginationDB(limit, offset, tagName);
+
+    // Public listing never exposes the owner's email
+    const trips = omitFieldsFromRows(rows, ['owner_email']);
+
+    return res.json({
       trips,
       total,
       totalPages,
       page
     });
   } catch (error) {
-    logger.error(`Error Fetching trips ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    logger.error(`Error Fetching public trips ${error}`);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
+// Access checked by requireTripReadAccess: req.trip, req.tripAccess
 export const getTripByUUID = async (req, res) => {
   try {
-    const uuid = req.body.data;
-    const userEmail = req.body.email;
+    const trips = await getTripsByUUIDDB(req.trip.uuid);
+    const visibleTrips = (req.tripAccess === 'public')
+      ? omitFieldsFromRows(trips, ['owner_email'])
+      : trips;
 
-    if (!uuid) {
-      res.status(400).json({ error: 'trip uuid is required' });
-    }
-
-    const hasAccess = await hasAccessToTripDB(uuid, userEmail);
-    if (!hasAccess) {
-      res.status(403).json({ error: 'You do not have access to this trip' });
-    }
-
-    const trips = await getTripsByUUIDDB(uuid);
-
-    res.json({ trips });
+    return res.json({ trips: visibleTrips });
   } catch (error) {
-    logger.error(`Error fetching trip ${req.body?.data || req.body?.uuid}: ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    logger.error(`Error fetching trip ${req.trip?.uuid}: ${error}`);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -114,13 +114,8 @@ export const getTripsByEmailPagination = async (req, res) => getResourcesByEmail
 // GET trips shared + array of recipients
 export const getMySharedTripsPagination = async (req, res) => {
   try {
-    const { email: ownerEmail, page = 1, limit = 10 } = req.body;
-
-    if (!ownerEmail) {
-      res.status(400).json({ error: 'ownerEmail is required' });
-    }
-
-    const offset = getPaginationOffset(page, limit);
+    const ownerEmail = req.user.email; // never trust req.body.email
+    const { page, limit, offset } = parsePagination(req.body);
 
     const totalResult = await getMySharedTripsTotalCountDB(ownerEmail);
     const total = parseInt(totalResult?.total || 0, 10);
@@ -130,10 +125,10 @@ export const getMySharedTripsPagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       // trip has shared_emails: ["email1", "email2", ...]
       trips,
       total,
@@ -141,20 +136,15 @@ export const getMySharedTripsPagination = async (req, res) => {
       page
     });
   } catch (error) {
-    logger.error(`Error fetching my shared trips for ${req.body.email}: ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    logger.error(`Error fetching my shared trips for ${req.user?.email}: ${error}`);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 // GET trips shared + array of recipients
 export const getOthersSharedTripsPagination = async (req, res) => {
   try {
-    const { email: othersEmail, page = 1, limit = 10 } = req.body;
-
-    if (!othersEmail) {
-      res.status(400).json({ error: 'othersEmail is required' });
-    }
-
-    const offset = getPaginationOffset(page, limit);
+    const othersEmail = req.user.email; // never trust req.body.email
+    const { page, limit, offset } = parsePagination(req.body);
 
     const totalResult = await getOthersSharedTripsTotalCountDB(othersEmail);
     const total = parseInt(totalResult?.total || 0, 10);
@@ -164,10 +154,10 @@ export const getOthersSharedTripsPagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       // trip has shared_emails: ["email1", "email2", ...]
       trips,
       total,
@@ -175,57 +165,62 @@ export const getOthersSharedTripsPagination = async (req, res) => {
       page
     });
   } catch (error) {
-    logger.error(`Error fetching others shared trips for ${req.body.email}: ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    logger.error(`Error fetching others shared trips for ${req.user?.email}: ${error}`);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const initTrips = async (req, res) => {
-  const { ownerEmail } = req.body.data;
-  const { role, subscription_end_at: subscription } = await getUserByEmailDB(ownerEmail);
-
   try {
+    // Caller identity comes from the session, not req.body.data.ownerEmail
+    const { email: ownerEmail, role, subscription_end_at: subscription } = req.user;
     const { total } = await getTripsTotalCountByEmailDB(ownerEmail);
-    if (role === 'admin') {
-      const trip = await initTripsDB(ownerEmail);
-      res.json({
-        trip: trip,
-        message: 'Trip Created!'
-      });
+    const tripCount = parseInt(total, 10);
+
+    if (role !== 'admin') {
+      if (role === 'user' && tripCount > 1) {
+        return res.status(403).send({ error: 'Free version only supports 2 trips' });
+      }
+      if (!isSubscriptionActive(subscription) && tripCount > 1) {
+        return res.status(403).send({ error: 'Subscription ended Free version only supports 2 trips' });
+      }
+      if (role !== 'premium_user' && role !== 'user') {
+        return res.status(403).send({ error: 'Forbidden' });
+      }
     }
 
-    if (role === 'user' && total > 1) {
-      res.status(403).send({ error: 'Free version only supports 2 trips' });
-    } else if ((!isSubscriptionActive(subscription) && total > 1)) {
-      res.status(403).send({ error: 'Subscription ended Free version only supports 2 trips' });
-    } else if (role === 'premium_user' || role === 'user') {
-      const trip = await initTripsDB(ownerEmail);
-      res.json({
-        trip: trip,
-        message: 'Trip Created!'
-      });
-    }
+    const trip = await initTripsDB(ownerEmail);
+    return res.json({
+      trip: trip,
+      message: 'Trip Created!'
+    });
   } catch (error) {
     logger.error(`Error in creating Trip: ${error}`);
-    res.status(500).send({ error: 'Failed to create Trip' });
+    return res.status(500).send({ error: 'Failed to create Trip' });
   }
 };
 
 export const updateTrips = async (req, res) => {
   const { uuid } = req.params;
-  const updateData = req.body.data;
+  const updateData = pickAllowedFields(req.body?.data, UPDATABLE_FIELDS.trips);
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: 'No updatable fields' });
+  }
+  if (updateData.shared_mode !== undefined && !TRIP_SHARED_MODES.includes(updateData.shared_mode)) {
+    return res.status(400).json({ error: 'Invalid shared_mode' });
+  }
 
   try {
     const updatedRows = await updateTripsDB(uuid, updateData);
 
     if (updatedRows === 0) {
-      res.status(404).json({ error: 'Trips not found' });
-    } else {
-      res.json({ message: 'Trips Updated!' });
+      return res.status(404).json({ error: 'Trips not found' });
     }
+    return res.json({ message: 'Trips Updated!' });
   } catch (error) {
     logger.error(`Error in updating Trips: ${error}`);
-    res.status(500).send({ error: 'Failed to update Trips' });
+    return res.status(500).send({ error: 'Failed to update Trips' });
   }
 };
 
@@ -234,9 +229,9 @@ export const deleteTripsByID = async (req, res) => {
 
   try {
     await deleteTripsDB(tripID);
-    res.json({ message: 'Trip Removed!' });
+    return res.json({ message: 'Trip Removed!' });
   } catch (error) {
     logger.error(`Error in removing Trip: ${error}`);
-    res.status(500).send({ error: 'Failed to remove Trip' });
+    return res.status(500).send({ error: 'Failed to remove Trip' });
   }
 };

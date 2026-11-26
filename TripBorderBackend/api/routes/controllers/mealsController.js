@@ -1,4 +1,5 @@
 import logger from '../../../setupPino';
+import { pickAllowedFields, UPDATABLE_FIELDS } from './utility/fieldUtility';
 import { getPaginationOffset } from './utility/paginationUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
 import {
@@ -22,10 +23,10 @@ export const getAllMealsPagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       meals,
       total,
       totalPages,
@@ -33,7 +34,7 @@ export const getAllMealsPagination = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching meals ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -49,30 +50,34 @@ export const createMealsByTrip = async (req, res) => {
 
     const newMeals = await createMealsByTripIDDB(meals);
 
-    res.json({
+    return res.json({
       meals: newMeals,
     });
   } catch (error) {
     logger.error(`Error Creating Meals by trips_uuid ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const updateMealsByID = async (req, res) => {
   const { uuid } = req.params;
-  const updateData = req.body.data;
+  // Ownership checked by requireRowTripOwner; only allow known columns
+  const updateData = pickAllowedFields(req.body?.data, UPDATABLE_FIELDS.meals);
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: 'No updatable fields' });
+  }
 
   try {
     const updatedRows = await updateMealsByIDDB(uuid, updateData);
 
     if (updatedRows === 0) {
-      res.status(404).json({ error: 'Meals not found' });
-    } else {
-      res.json({ message: 'Meals Updated!' });
+      return res.status(404).json({ error: 'Meals not found' });
     }
+    return res.json({ message: 'Meals Updated!' });
   } catch (error) {
     logger.error(`Error in updating Meals: ${error}`);
-    res.status(500).send({ error: 'Failed to update Meals' });
+    return res.status(500).send({ error: 'Failed to update Meals' });
   }
 };
 
@@ -81,9 +86,9 @@ export const deleteMealsByID = async (req, res) => {
 
   try {
     await deleteMealsByIDDB(mealID);
-    res.json({ message: 'Meal Removed!' });
+    return res.json({ message: 'Meal Removed!' });
   } catch (error) {
     logger.error(`Error in removing Meals: ${error}`);
-    res.status(500).send({ error: 'Failed to remove Meals' });
+    return res.status(500).send({ error: 'Failed to remove Meals' });
   }
 };

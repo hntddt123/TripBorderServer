@@ -1,27 +1,40 @@
 import { knexDBInstance } from './knexDBInstance';
+import { pickAllowedFields, UPDATABLE_FIELDS } from '../routes/controllers/utility/fieldUtility';
 import logger from '../../setupPino';
 import {
   DefaultyyyyMMdd
 } from '../../utility/time';
 
+/**
+ * Resolves how userEmail may access a trip.
+ * access: 'owner' | 'shared' | 'public' | null
+ */
+export const getTripAccessDB = async (tripsUUID, userEmail) => {
+  const trip = await knexDBInstance('trips')
+    .where({ uuid: tripsUUID })
+    .first();
+
+  if (!trip) return { trip: null, access: null };
+
+  if (userEmail && trip.owner_email === userEmail) return { trip, access: 'owner' };
+
+  if (userEmail) {
+    // if the email is in trip_shares
+    const shareCheck = await knexDBInstance('trip_shares')
+      .select('uuid')
+      .where({ trips_uuid: tripsUUID, shared_email: userEmail })
+      .first();
+    if (shareCheck) return { trip, access: 'shared' };
+  }
+
+  if (trip.shared_mode === 'public') return { trip, access: 'public' };
+
+  return { trip, access: null };
+};
+
 export const hasAccessToTripDB = async (tripsUUID, userEmail) => {
-  if (!userEmail) return false;
-
-  // Owner always has access
-  const ownerCheck = await knexDBInstance('trips')
-    .select('uuid')
-    .where({ uuid: tripsUUID, owner_email: userEmail })
-    .first();
-
-  if (ownerCheck) return true;
-
-  // if the email is in trip_shares
-  const shareCheck = await knexDBInstance('trip_shares')
-    .select('uuid')
-    .where({ tripsUUID, shared_email: userEmail })
-    .first();
-
-  return !!shareCheck;
+  const { access } = await getTripAccessDB(tripsUUID, userEmail);
+  return access !== null;
 };
 
 export const getTripsByUUIDDB = async (tripUUID) => knexDBInstance('trips')
@@ -49,7 +62,18 @@ export const getTripsPaginationDB = async (limit, offset) => knexDBInstance('tri
   .offset(offset)
   .orderBy('updated_at', 'desc');
 
+const publicTripColumns = [
+  'trips.uuid',
+  'trips.title',
+  'trips.start_date',
+  'trips.end_date',
+  'trips.created_at',
+  'trips.updated_at',
+  'trips.shared_mode'
+];
+
 export const getTripsPublicPaginationDB = async (limit, offset) => knexDBInstance('trips')
+  .select(publicTripColumns)
   .where({ shared_mode: 'public' })
   .limit(limit)
   .offset(offset)
@@ -60,10 +84,10 @@ export const getTripsWithTagNamePublicPaginationDB = async (limit, offset, tagNa
   .join('trip_tags', 'trips.uuid', '=', 'trip_tags.trips_uuid')
   .join('tags', 'trip_tags.tags_uuid', '=', 'tags.uuid')
   .where('tags.name', tagName)
-  .select('trips.*')
+  .select(publicTripColumns)
   .limit(limit)
   .offset(offset)
-  .orderBy('created_at', 'desc');
+  .orderBy('trips.created_at', 'desc');
 
 export const getMySharedTripsWithRecipientsPaginationDB = async (
   ownerEmail,
@@ -190,7 +214,7 @@ export const initTripsDB = async (ownerEmail) => knexDBInstance('trips')
 export const updateTripsDB = async (uuid, updateData) => {
   const updatedRows = await knexDBInstance('trips')
     .where('uuid', uuid)
-    .update(updateData);
+    .update(pickAllowedFields(updateData, UPDATABLE_FIELDS.trips));
 
   return updatedRows;
 };

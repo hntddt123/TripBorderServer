@@ -92,6 +92,14 @@ export const googleStrategy = () => new GoogleStrategy(
   }
 );
 
+const accessCookieOptions = {
+  httpOnly: true, // Prevents JS access
+  secure: true,
+  sameSite: 'strict', // Mitigates CSRF
+  maxAge: ACCESS_EXP, // 1h in ms
+  path: '/' // Available site-wide
+};
+
 export const redirect = (req, res) => {
   res.redirect(`${primaryFrontendOrigin}/?auth=success`);
 };
@@ -108,13 +116,7 @@ export const setJWTToken = (req, res, next) => {
     const token = tokenService.generateAccessToken(payload);
     const refreshToken = tokenService.generateRefreshToken(payload);
 
-    res.cookie('jwtAccess', token, {
-      httpOnly: true, // Prevents JS access
-      secure: true,
-      sameSite: 'strict', // Mitigates CSRF
-      maxAge: ACCESS_EXP, // 1h in ms
-      path: '/' // Available site-wide
-    });
+    res.cookie('jwtAccess', token, accessCookieOptions);
     res.cookie('jwtRefresh', refreshToken, {
       httpOnly: true, // Prevents JS access
       secure: true,
@@ -131,61 +133,96 @@ export const setJWTToken = (req, res, next) => {
   }
 };
 
-export const optionalAuth = (req, res, next) => {
-  passport.authenticate('jwt', { session: false }, (err, user, info) => {
+/**
+ * Resolves the current user from the jwtAccess cookie, falling back to the
+ * jwtRefresh cookie when the access token is missing. Always resolves to a
+ * user_accounts row or null; rejects only on unexpected errors.
+ */
+export const authenticateFromCookies = (req, res) => new Promise((resolve, reject) => {
+  passport.authenticate('jwt', { session: false }, async (err, user, info) => {
     if (err) {
       logger.error(err);
-      return next(err); // Pass errors downstream
+      return reject(err);
     }
 
     if (user) {
-      req.user = user; // Valid access: Attach user
-      return next();
+      return resolve(user);
     }
 
-    // Check for expiration specifically
-    if (info && info.message === 'No auth token') {
-      const { jwtRefresh } = req.cookies; // Extract refresh cookie
-      if (!jwtRefresh) {
-        req.user = null; // No refresh: Optional, proceed as unauth
-        return next();
-      }
-
-      try {
-        const refreshedToken = tokenService.verifyRefreshToken(jwtRefresh); // Verify refresh; throws if invalid/expired
-        const newAccessToken = tokenService.generateAccessToken(refreshedToken); // Generate new access with same payload
-        res.cookie(
-          'jwtAccess',
-          newAccessToken,
-          {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'Strict',
-            maxAge: ACCESS_EXP
-          }
-        ); // Set new cookie (1h ms)
-        return next();
-      } catch (refreshErr) {
-        logger.error(refreshErr);
-        req.user = null; // Refresh failed: Proceed as unauth
-        return next();
-      }
+    const noAccessToken = info && info.message === 'No auth token';
+    const jwtRefresh = req.cookies ? req.cookies.jwtRefresh : undefined;
+    if (!noAccessToken || !jwtRefresh) {
+      return resolve(null);
     }
 
-    // Other failures (e.g., invalid signature): Proceed as unauth
-    req.user = null;
+    try {
+      // Verify refresh; throws if invalid/expired
+      const refreshed = tokenService.verifyRefreshToken(jwtRefresh);
+      const refreshedUser = await loadUserDB(refreshed.sub);
+      if (!refreshedUser) {
+        return resolve(null);
+      }
+      // Re-issue access token with the current role from the DB (not the old claim)
+      const newAccessToken = tokenService.generateAccessToken({
+        sub: refreshedUser.uuid,
+        role: refreshedUser.role,
+        iss: primaryFrontendOrigin,
+        aud: primaryFrontendOrigin
+      });
+      res.cookie('jwtAccess', newAccessToken, accessCookieOptions);
+      return resolve(refreshedUser);
+    } catch (refreshErr) {
+      logger.error(refreshErr);
+      return resolve(null);
+    }
+  })(req, res);
+});
+
+// Attaches req.user (or null) and always continues
+export const optionalAuth = async (req, res, next) => {
+  try {
+    req.user = await authenticateFromCookies(req, res);
     return next();
-  })(req, res, next);
+  } catch (error) {
+    return next(error);
+  }
 };
+
+// 401 unless a valid session cookie is present
+export const requireAuth = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      req.user = await authenticateFromCookies(req, res);
+    }
+    if (!req.user) {
+      return res.status(401).json({ isAuthenticated: false, message: 'Auth failed' });
+    }
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 401 when logged out, 403 when the role is not allowed
+export const requireRole = (...roles) => (req, res, next) => requireAuth(req, res, (err) => {
+  if (err) return next(err);
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  return next();
+});
+
+export const requireAdmin = requireRole('admin');
+
+export const isAdmin = (user) => !!user && user.role === 'admin';
 
 export const getAuthStatus = (req, res) => {
   if (req.user) {
-    res.json({
+    return res.json({
       isAuthenticated: true,
       uuid: req.user.uuid,
       email: req.user.email,
       provider: req.user.provider,
-      provider_user_id: req.user.provider_user_id,
       name: req.user.name,
       profile_picture: req.user.profile_picture,
       created_at: req.user.created_at,
@@ -194,17 +231,13 @@ export const getAuthStatus = (req, res) => {
       trial_started_at: req.user.trial_started_at,
       is_trialed: req.user.is_trialed,
       premium_started_at: req.user.premium_started_at,
-      stripe_customer_id: req.user.stripe_customer_id,
-      stripe_subscription_id: req.user.stripe_subscription_id,
       subscription_end_at: req.user.subscription_end_at
     });
-  } else {
-    res.json({
-      isAuthenticated: false,
-      message: 'Auth failed',
-      status: 401
-    });
   }
+  return res.status(401).json({
+    isAuthenticated: false,
+    message: 'Auth failed'
+  });
 };
 
 export const logout = (req, res) => {

@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { cleanEnv, str } from 'envalid';
 import logger from '../../../setupPino';
-import { getUserByEmailDB, updateUserDB } from '../../knex/userknex';
+import { updateUserDB } from '../../knex/userknex';
 import { knexDBInstance } from '../../knex/knexDBInstance';
 
 const env = cleanEnv(process.env, {
@@ -26,11 +26,11 @@ const primaryFrontendOrigin = FRONTEND_ORIGIN.split(',')[0].trim();
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 export const createPremiumSubscription = async (req, res) => {
-  const { ownerEmail } = req.body.data;
-  const { uuid } = await getUserByEmailDB(ownerEmail);
+  // Identity comes from the session (requireAuth), not req.body.data.ownerEmail
+  const { uuid, email } = req.user || {};
 
   try {
-    if (!uuid) res.status(401).json({ error: 'Unauthorized' });
+    if (!uuid) return res.status(401).json({ error: 'Unauthorized' });
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -43,12 +43,13 @@ export const createPremiumSubscription = async (req, res) => {
       ],
       success_url: `${primaryFrontendOrigin}?payment=success`,
       automatic_tax: { enabled: true },
+      customer_email: email,
       metadata: { useruuid: uuid },
     });
-    res.json({ url: session.url });
+    return res.json({ url: session.url });
   } catch (error) {
     logger.error(`Error in creating Premium Subscription Session: ${error}`);
-    res.status(500).send({ error: 'Failed to create Premium Subscription Session' });
+    return res.status(500).send({ error: 'Failed to create Premium Subscription Session' });
   }
 };
 
@@ -60,7 +61,7 @@ export const upgradePremiumSubscription = async (req, res) => {
     event = await stripe.webhooks.constructEvent(req.body, sig, STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     logger.error(`Webhook signature verification failed: ${err.message}`);
-    res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send('Webhook Error');
   }
 
   try {
@@ -85,10 +86,9 @@ export const upgradePremiumSubscription = async (req, res) => {
           };
           const updatedRows = await updateUserDB(userUUID, updates);
           if (updatedRows === 0) {
-            res.status(404).json({ error: 'User not found' });
-          } else {
-            logger.info('User upgraded to premium');
+            return res.status(404).json({ error: 'User not found' });
           }
+          logger.info('User upgraded to premium');
         }
         break;
       }
@@ -116,9 +116,9 @@ export const upgradePremiumSubscription = async (req, res) => {
       default:
         break;
     }
-    res.status(200).json({ received: true });
+    return res.status(200).json({ received: true });
   } catch (error) {
     logger.error(`Error in Upgrading User: ${error}`);
-    res.status(500).send({ error: 'Failed to Upgrade User' });
+    return res.status(500).send({ error: 'Failed to Upgrade User' });
   }
 };

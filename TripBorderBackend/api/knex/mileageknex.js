@@ -1,4 +1,5 @@
 import { knexDBInstance } from './knexDBInstance';
+import { pickAllowedFields, UPDATABLE_FIELDS } from '../routes/controllers/utility/fieldUtility';
 import { ocrMatchFrequentFlyerNumber } from '../../utility/ocr';
 import logger from '../../setupPino';
 
@@ -68,7 +69,7 @@ export const deleteMileagesDB = async (mileageID) => {
 export const updateMileagesDB = async (uuid, updateData) => {
   const updatedRows = await knexDBInstance('mileages')
     .where('uuid', uuid)
-    .update(updateData);
+    .update(pickAllowedFields(updateData, UPDATABLE_FIELDS.mileages));
 
   return updatedRows;
 };

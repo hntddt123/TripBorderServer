@@ -1,5 +1,6 @@
 import logger from '../../setupPino';
 import { knexDBInstance } from './knexDBInstance';
+import { pickAllowedFields, UPDATABLE_FIELDS } from '../routes/controllers/utility/fieldUtility';
 
 export const getTransportsPaginationDB = async (limit, offset) => knexDBInstance('transports')
   .limit(limit)
@@ -26,7 +27,7 @@ export const createTransportByTripIDDB = async (transport) => knexDBInstance('tr
 export const updateTransportByIDDB = async (uuid, updateData) => {
   const updatedRows = await knexDBInstance('transports')
     .where('uuid', uuid)
-    .update(updateData);
+    .update(pickAllowedFields(updateData, UPDATABLE_FIELDS.transports));
 
   return updatedRows;
 };

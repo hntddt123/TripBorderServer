@@ -1,4 +1,5 @@
 import logger from '../../../setupPino';
+import { pickAllowedFields, UPDATABLE_FIELDS } from './utility/fieldUtility';
 import { getPaginationOffset } from './utility/paginationUtility';
 import { getResourcesByTripID } from './utility/genericControllerUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
@@ -22,10 +23,10 @@ export const getAllPOIsPagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       pois,
       total,
       totalPages,
@@ -33,7 +34,7 @@ export const getAllPOIsPagination = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching points_of_interest ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -49,30 +50,34 @@ export const createPOIByTrip = async (req, res) => {
 
     const newPOI = await createPOIByTripIDDB(poi);
 
-    res.json({
+    return res.json({
       poi: newPOI,
     });
   } catch (error) {
     logger.error(`Error Creating points_of_interest by trips_uuid ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const updatePOIByID = async (req, res) => {
   const { uuid } = req.params;
-  const updateData = req.body.data;
+  // Ownership checked by requireRowTripOwner; only allow known columns
+  const updateData = pickAllowedFields(req.body?.data, UPDATABLE_FIELDS.points_of_interest);
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: 'No updatable fields' });
+  }
 
   try {
     const updatedRows = await updatePOIByIDDB(uuid, updateData);
 
     if (updatedRows === 0) {
-      res.status(404).json({ error: 'POI not found' });
-    } else {
-      res.json({ message: 'POI Updated!' });
+      return res.status(404).json({ error: 'POI not found' });
     }
+    return res.json({ message: 'POI Updated!' });
   } catch (error) {
     logger.error(`Error in updating POI: ${error}`);
-    res.status(500).send({ error: 'Failed to update POI' });
+    return res.status(500).send({ error: 'Failed to update POI' });
   }
 };
 
@@ -81,9 +86,9 @@ export const deletePOIByID = async (req, res) => {
 
   try {
     await deletePOIByIDDB(poiID);
-    res.json({ message: 'POI Removed!' });
+    return res.json({ message: 'POI Removed!' });
   } catch (error) {
     logger.error(`Error in removing points_of_interest: ${error}`);
-    res.status(500).send({ error: 'Failed to remove points_of_interest' });
+    return res.status(500).send({ error: 'Failed to remove points_of_interest' });
   }
 };

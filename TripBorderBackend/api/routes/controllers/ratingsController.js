@@ -1,4 +1,5 @@
 import logger from '../../../setupPino';
+import { pickAllowedFields, UPDATABLE_FIELDS } from './utility/fieldUtility';
 import { getPaginationOffset } from './utility/paginationUtility';
 import { getResourcesByTripID } from './utility/genericControllerUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
@@ -22,10 +23,10 @@ export const getAllRatingsPagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       ratings,
       total,
       totalPages,
@@ -33,14 +34,15 @@ export const getAllRatingsPagination = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching ratings ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const getRatingsByTrip = async (req, res) => getResourcesByTripID(req, res, {
   resourceName: 'ratings',
   orderBy: 'created_at',
-  orderPrecedence: 'asc'
+  orderPrecedence: 'asc',
+  publicOmitFields: ['owner_email']
 });
 
 export const createRatingByTrip = async (req, res) => {
@@ -49,12 +51,12 @@ export const createRatingByTrip = async (req, res) => {
 
     const newRating = await createRatingByTripIDDB(rating);
 
-    res.json({
+    return res.json({
       rating: newRating,
     });
   } catch (error) {
     logger.error(`Error Creating Rating by trips_uuid ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -63,26 +65,30 @@ export const deleteRatingByID = async (req, res) => {
 
   try {
     await deleteRatingByIDDB(ratingID);
-    res.json({ message: 'Rating Removed!' });
+    return res.json({ message: 'Rating Removed!' });
   } catch (error) {
     logger.error(`Error in removing Rating: ${error}`);
-    res.status(500).send({ error: 'Failed to remove Rating' });
+    return res.status(500).send({ error: 'Failed to remove Rating' });
   }
 };
 
 export const updateRating = async (req, res) => {
   const { uuid } = req.params;
-  const updateData = req.body.data;
+  // Ownership checked by requireRowTripOwner; only allow known columns
+  const updateData = pickAllowedFields(req.body?.data, UPDATABLE_FIELDS.ratings);
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: 'No updatable fields' });
+  }
   try {
     const updatedRows = await updateRatingDB(uuid, updateData);
 
     if (updatedRows === 0) {
-      res.status(404).json({ error: 'Rating not found' });
-    } else {
-      res.json({ message: 'Rating Updated!' });
+      return res.status(404).json({ error: 'Rating not found' });
     }
+    return res.json({ message: 'Rating Updated!' });
   } catch (error) {
     logger.error(`Error in updating Rating: ${error}`);
-    res.status(500).send({ error: 'Failed to update Rating' });
+    return res.status(500).send({ error: 'Failed to update Rating' });
   }
 };

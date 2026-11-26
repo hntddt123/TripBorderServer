@@ -1,5 +1,6 @@
 import logger from '../../setupPino';
 import { knexDBInstance } from './knexDBInstance';
+import { pickAllowedFields, UPDATABLE_FIELDS } from '../routes/controllers/utility/fieldUtility';
 
 export const getRatingsPaginationDB = async (limit, offset) => knexDBInstance('ratings')
   .limit(limit)
@@ -28,7 +29,7 @@ export const deleteRatingByIDDB = async (ratingID) => {
 export const updateRatingDB = async (uuid, updateData) => {
   const updatedRows = await knexDBInstance('ratings')
     .where('uuid', uuid)
-    .update(updateData);
+    .update(pickAllowedFields(updateData, UPDATABLE_FIELDS.ratings));
 
   return updatedRows;
 };

@@ -10,17 +10,24 @@ import {
   deleteTripsByID,
   updateTrips
 } from '../controllers/tripsController';
+import { optionalAuth, requireAuth, requireAdmin } from '../controllers/authController';
+import {
+  requireTripReadAccess,
+  requireTripOwner,
+  fromBodyData,
+  fromParamsUUID
+} from '../../middlewares/authorizationMiddleware';
 
 const tripsRouter = Router();
 
-tripsRouter.get('/', getAllTripsPagination);
-tripsRouter.get('/tripspublicpagination', getTripsPublicPagination);
-tripsRouter.post('/tripsmysharedpagination', getMySharedTripsPagination);
-tripsRouter.post('/tripsotherssharedpagination', getOthersSharedTripsPagination);
-tripsRouter.post('/tripsbyemailpagination', getTripsByEmailPagination);
-tripsRouter.post('/tripsbyuuid', getTripByUUID);
-tripsRouter.post('/init', initTrips);
-tripsRouter.delete('/removebyid', deleteTripsByID);
-tripsRouter.patch('/update/:uuid', updateTrips);
+tripsRouter.get('/', requireAdmin, getAllTripsPagination);
+tripsRouter.get('/tripspublicpagination', getTripsPublicPagination); // public
+tripsRouter.post('/tripsmysharedpagination', requireAuth, getMySharedTripsPagination);
+tripsRouter.post('/tripsotherssharedpagination', requireAuth, getOthersSharedTripsPagination);
+tripsRouter.post('/tripsbyemailpagination', requireAuth, getTripsByEmailPagination);
+tripsRouter.post('/tripsbyuuid', optionalAuth, requireTripReadAccess(fromBodyData), getTripByUUID);
+tripsRouter.post('/init', requireAuth, initTrips);
+tripsRouter.delete('/removebyid', requireAuth, requireTripOwner(fromBodyData), deleteTripsByID);
+tripsRouter.patch('/update/:uuid', requireAuth, requireTripOwner(fromParamsUUID), updateTrips);
 
 export default tripsRouter;

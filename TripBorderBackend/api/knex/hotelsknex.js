@@ -1,5 +1,6 @@
 import logger from '../../setupPino';
 import { knexDBInstance } from './knexDBInstance';
+import { pickAllowedFields, UPDATABLE_FIELDS } from '../routes/controllers/utility/fieldUtility';
 
 export const getHotelsPaginationDB = async (limit, offset) => knexDBInstance('hotels')
   .limit(limit)
@@ -22,7 +23,7 @@ export const createHotelByTripIDDB = async (hotels) => knexDBInstance('hotels')
 export const updateHotelByIDDB = async (uuid, updateData) => {
   const updatedRows = await knexDBInstance('hotels')
     .where('uuid', uuid)
-    .update(updateData);
+    .update(pickAllowedFields(updateData, UPDATABLE_FIELDS.hotels));
 
   return updatedRows;
 };

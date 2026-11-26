@@ -23,10 +23,10 @@ export const getAllTagsPagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       tags,
       total,
       totalPages,
@@ -34,7 +34,7 @@ export const getAllTagsPagination = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching tags ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -52,7 +52,7 @@ export const getAllTagsInfiniteScroll = async (req, res) => {
     const hasMore = page < totalPages;
 
     if (page > totalPages && total > 0) {
-      res.json({
+      return res.json({
         tags: [],
         total,
         totalPages,
@@ -61,7 +61,7 @@ export const getAllTagsInfiniteScroll = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       tags,
       total,
       totalPages,
@@ -70,7 +70,7 @@ export const getAllTagsInfiniteScroll = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching tags ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -85,12 +85,12 @@ export const createTagByTrip = async (req, res) => {
     const tag = req.body.data;
     const newTag = await createTagByTripIDDB(tag);
 
-    res.json({
+    return res.json({
       tag: newTag,
     });
   } catch (error) {
     logger.error(`Error Creating Tag by trips_uuid ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -99,9 +99,9 @@ export const deleteTagByID = async (req, res) => {
 
   try {
     await deleteTagByIDDB(tagID);
-    res.json({ message: 'Tag Removed!' });
+    return res.json({ message: 'Tag Removed!' });
   } catch (error) {
     logger.error(`Error in removing Tag: ${error}`);
-    res.status(500).send({ error: 'Failed to remove Tag' });
+    return res.status(500).send({ error: 'Failed to remove Tag' });
   }
 };

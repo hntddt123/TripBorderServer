@@ -4,11 +4,12 @@ import {
   getUserByEmail,
   updateUser
 } from '../controllers/usersController';
+import { requireAdmin } from '../controllers/authController';
 
 const usersRouter = Router();
 
-usersRouter.get('/', getAllUsersPagination);
-usersRouter.post('/userbyemail', getUserByEmail);
-usersRouter.patch('/update/:uuid', updateUser);
+usersRouter.get('/', requireAdmin, getAllUsersPagination);
+usersRouter.post('/userbyemail', requireAdmin, getUserByEmail);
+usersRouter.patch('/update/:uuid', requireAdmin, updateUser);
 
 export default usersRouter;

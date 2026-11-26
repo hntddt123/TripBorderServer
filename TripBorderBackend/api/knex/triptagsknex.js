@@ -10,8 +10,8 @@ export const getPublicTripTagsPaginationDB = async (limit, offset) => knexDBInst
   .join('trips', 'trip_tags.trips_uuid', '=', 'trips.uuid')
   .join('tags', 'trip_tags.tags_uuid', '=', 'tags.uuid')
   .where('trips.shared_mode', 'public')
-  .distinct('trip_tags.tags_uuid')
-  .select('tags.*')
+  // Only tag uuid/name are public; never expose tags.owner_email
+  .distinct('tags.uuid', 'tags.name')
   .orderBy('tags.name', 'asc')
   .limit(limit)
   .offset(offset);

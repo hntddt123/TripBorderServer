@@ -1,4 +1,5 @@
 import logger from '../../../setupPino';
+import { pickAllowedFields, UPDATABLE_FIELDS } from './utility/fieldUtility';
 import { getPaginationOffset } from './utility/paginationUtility';
 import { getResourcesByTripID } from './utility/genericControllerUtility';
 import { getTableTotalCountDB } from '../../knex/utilityknex';
@@ -22,10 +23,10 @@ export const getAllTransportsPagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       transports,
       total,
       totalPages,
@@ -33,14 +34,15 @@ export const getAllTransportsPagination = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching transports ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const getTransportsByTrip = async (req, res) => getResourcesByTripID(req, res, {
   resourceName: 'transports',
   orderBy: 'departure_time',
-  orderPrecedence: 'asc'
+  orderPrecedence: 'asc',
+  publicOmitFields: ['booking_reference']
 });
 
 export const createTransportByTrip = async (req, res) => {
@@ -49,30 +51,34 @@ export const createTransportByTrip = async (req, res) => {
 
     const newTransport = await createTransportByTripIDDB(transport);
 
-    res.json({
+    return res.json({
       transport: newTransport,
     });
   } catch (error) {
     logger.error(`Error Creating Transport by trips_uuid ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const updateTransportByID = async (req, res) => {
   const { uuid } = req.params;
-  const updateData = req.body.data;
+  // Ownership checked by requireRowTripOwner; only allow known columns
+  const updateData = pickAllowedFields(req.body?.data, UPDATABLE_FIELDS.transports);
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: 'No updatable fields' });
+  }
 
   try {
     const updatedRows = await updateTransportByIDDB(uuid, updateData);
 
     if (updatedRows === 0) {
-      res.status(404).json({ error: 'Transport not found' });
-    } else {
-      res.json({ message: 'Transport Updated!' });
+      return res.status(404).json({ error: 'Transport not found' });
     }
+    return res.json({ message: 'Transport Updated!' });
   } catch (error) {
     logger.error(`Error in updating Transport: ${error}`);
-    res.status(500).send({ error: 'Failed to update Transport' });
+    return res.status(500).send({ error: 'Failed to update Transport' });
   }
 };
 
@@ -81,9 +87,9 @@ export const deleteTransportByID = async (req, res) => {
 
   try {
     await deleteTransportByIDDB(TransportID);
-    res.json({ message: 'Transport Removed!' });
+    return res.json({ message: 'Transport Removed!' });
   } catch (error) {
     logger.error(`Error in removing Transport: ${error}`);
-    res.status(500).send({ error: 'Failed to remove Transport' });
+    return res.status(500).send({ error: 'Failed to remove Transport' });
   }
 };

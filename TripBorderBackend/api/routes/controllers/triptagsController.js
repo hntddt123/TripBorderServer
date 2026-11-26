@@ -24,10 +24,10 @@ export const getAllTripTagsPagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       tripTags,
       total,
       totalPages,
@@ -35,7 +35,7 @@ export const getAllTripTagsPagination = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching tripTags ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -53,7 +53,7 @@ export const getAllPublicTripTagsInfiniteScroll = async (req, res) => {
     const hasMore = page < totalPages;
 
     if (page > totalPages && total > 0) {
-      res.json({
+      return res.json({
         tripTags: [],
         total,
         totalPages,
@@ -62,7 +62,7 @@ export const getAllPublicTripTagsInfiniteScroll = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       tripTags,
       total,
       totalPages,
@@ -71,7 +71,7 @@ export const getAllPublicTripTagsInfiniteScroll = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching tripTags ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -80,10 +80,10 @@ export const getTripTagsByTripID = async (req, res) => {
     const { tripID } = req.body;
     const tripTags = await getTripTagsbyTripDB(tripID);
 
-    res.json({ tripTags });
+    return res.json({ tripTags });
   } catch (error) {
     logger.error(`Error Fetching tripTags ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -93,19 +93,19 @@ export const createTripTagByTripIDAndTagID = async (req, res) => {
 
     const existing = await isTripTagDuplicateDB(tripTag);
     if (existing) {
-      res.status(409).json({
+      return res.status(409).json({
         error: 'The triptag already exists'
       });
     }
 
     const newTripTag = await createTripTagByTripIDAndTagIDDB(tripTag);
 
-    res.json({
+    return res.json({
       tripTag: newTripTag,
     });
   } catch (error) {
     logger.error(`Error Creating TripTag by trips_uuid ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -114,9 +114,9 @@ export const deleteTripTagByID = async (req, res) => {
 
   try {
     await deleteTripTagByIDDB(tripTagID);
-    res.json({ message: 'TripTag Removed!' });
+    return res.json({ message: 'TripTag Removed!' });
   } catch (error) {
     logger.error(`Error in removing TripTag: ${error}`);
-    res.status(500).send({ error: 'Failed to remove TripTag' });
+    return res.status(500).send({ error: 'Failed to remove TripTag' });
   }
 };

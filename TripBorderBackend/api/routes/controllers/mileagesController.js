@@ -11,6 +11,11 @@ import {
 } from '../../knex/mileageknex';
 import logger from '../../../setupPino';
 import { getPaginationOffset } from './utility/paginationUtility';
+import {
+  omitFields, parsePagination, pickAllowedFields, UPDATABLE_FIELDS
+} from './utility/fieldUtility';
+
+const SELLING_PRIVATE_FIELDS = ['frequent_flyer_number', 'mileage_picture', 'owner_email'];
 
 export const getAllMileagePagination = async (req, res) => {
   try {
@@ -25,10 +30,10 @@ export const getAllMileagePagination = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       mileages,
       total,
       totalPages,
@@ -36,27 +41,31 @@ export const getAllMileagePagination = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching mileages ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const getMileagesSelling = async (req, res) => {
   try {
-    const { page, limit } = req.query;
-    const offset = getPaginationOffset(page, limit);
+    const { page, limit, offset } = parsePagination(req.query);
 
     const totalResult = await getAllVerifiedAndListedMileagesDB();
     const total = parseInt(totalResult.total, 10);
 
-    const mileages = await getVerifiedAndListedMileagesPaginationDB(limit, offset);
+    const rows = await getVerifiedAndListedMileagesPaginationDB(limit, offset);
+    // Only the listing owner or an admin sees frequent flyer number / picture
+    const isAdminUser = req.user?.role === 'admin';
+    const mileages = rows.map((row) => ((isAdminUser || row.owner_email === req.user?.email)
+      ? row
+      : omitFields(row, SELLING_PRIVATE_FIELDS)));
 
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       mileages,
       total,
       totalPages,
@@ -64,14 +73,14 @@ export const getMileagesSelling = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching mileages selling ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const getMileagesByEmail = async (req, res) => {
   try {
-    const { email, page, limit } = req.body;
-    const offset = getPaginationOffset(page, limit);
+    const { email } = req.user; // never trust req.body.email
+    const { page, limit, offset } = parsePagination(req.body);
 
     const totalResult = await getMileagesTotalCountByEmailDB(email);
     const total = parseInt(totalResult.total, 10);
@@ -81,10 +90,10 @@ export const getMileagesByEmail = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     if (page > totalPages && total > 0) {
-      res.status(400).json({ error: 'Invalid page number' });
+      return res.status(400).json({ error: 'Invalid page number' });
     }
 
-    res.json({
+    return res.json({
       mileages,
       total,
       totalPages,
@@ -92,7 +101,7 @@ export const getMileagesByEmail = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error Fetching mileages ${error}`);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -101,10 +110,10 @@ export const postMileages = async (req, res) => {
 
   try {
     await insertMileagesDB(newMileage);
-    res.json({ message: 'Mileage Created!' });
+    return res.json({ message: 'Mileage Created!' });
   } catch (error) {
     logger.error(`Error in creating Mileage: ${error}`);
-    res.status(500).send({ error: 'Failed to create Mileage' });
+    return res.status(500).send({ error: 'Failed to create Mileage' });
   }
 };
 
@@ -113,31 +122,30 @@ export const deleteMileagesByID = async (req, res) => {
 
   try {
     await deleteMileagesDB(mileageID);
-    res.json({ message: 'Mileage Removed!' });
+    return res.json({ message: 'Mileage Removed!' });
   } catch (error) {
     logger.error(`Error in removing Mileage: ${error}`);
-    res.status(500).send({ error: 'Failed to remove Mileage' });
+    return res.status(500).send({ error: 'Failed to remove Mileage' });
   }
 };
 
 export const updateMileages = async (req, res) => {
   const { uuid } = req.params;
-  const updates = req.body.data;
+  const updateData = pickAllowedFields(req.body?.data, UPDATABLE_FIELDS.mileages);
 
-  const updateData = {};
-  if (updates.is_verified !== undefined) updateData.is_verified = updates.is_verified;
-  if (updates.is_listed !== undefined) updateData.is_listed = updates.is_listed;
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: 'No updatable fields' });
+  }
 
   try {
     const updatedRows = await updateMileagesDB(uuid, updateData);
 
     if (updatedRows === 0) {
-      res.status(404).json({ error: 'Mileage not found' });
-    } else {
-      res.json({ message: 'Mileage Updated!' });
+      return res.status(404).json({ error: 'Mileage not found' });
     }
+    return res.json({ message: 'Mileage Updated!' });
   } catch (error) {
     logger.error(`Error in updating Mileage: ${error}`);
-    res.status(500).send({ error: 'Failed to update Mileage' });
+    return res.status(500).send({ error: 'Failed to update Mileage' });
   }
 };

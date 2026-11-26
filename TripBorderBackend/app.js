@@ -36,7 +36,15 @@ if (process.env.NODE_ENV === 'development') {
 
 app.set('trust proxy', 1);
 app.use(httpLogger);
-app.use(helmet());
+// nginx already sets CSP, X-Frame-Options, HSTS, nosniff and Referrer-Policy.
+// Disable the overlapping helmet headers so responses don't carry conflicting duplicates.
+app.use(helmet({
+  contentSecurityPolicy: false,
+  frameguard: false,
+  hsts: false,
+  noSniff: false,
+  referrerPolicy: false
+}));
 app.use(cors({
   origin: allowedOrigins,
   credentials: true
@@ -56,9 +64,11 @@ app.use(rateLimit({
 
 app.use('/api', httpRequestMiddleware, apiRouter);
 
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  logger.error('Unexpected error:', err.message, err.stack);
-  res.status(500).json({ message: `Internal server error: ${err.message}` });
+  logger.error(`Unexpected error: ${err.message} ${err.stack}`);
+  // Never leak internal error details to clients
+  res.status(500).json({ message: 'Internal server error' });
 });
 
 app.get('/metrics', async (req, res) => {

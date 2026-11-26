@@ -1,5 +1,6 @@
 import logger from '../../setupPino';
 import { knexDBInstance } from './knexDBInstance';
+import { pickAllowedFields, UPDATABLE_FIELDS } from '../routes/controllers/utility/fieldUtility';
 
 export const getPOIsPaginationDB = async (limit, offset) => knexDBInstance('points_of_interest')
   .limit(limit)
@@ -20,7 +21,7 @@ export const createPOIByTripIDDB = async (poi) => knexDBInstance('points_of_inte
 export const updatePOIByIDDB = async (uuid, updateData) => {
   const updatedRows = await knexDBInstance('points_of_interest')
     .where('uuid', uuid)
-    .update(updateData);
+    .update(pickAllowedFields(updateData, UPDATABLE_FIELDS.points_of_interest));
 
   return updatedRows;
 };
